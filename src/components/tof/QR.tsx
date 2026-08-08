@@ -3,17 +3,23 @@ import QRCode from "qrcode";
 
 export function QR({ value, size }: { value: string; size: number }) {
   const ref = useRef<HTMLCanvasElement | null>(null);
+  const px = size - 14;
   useEffect(() => {
-    if (!ref.current) return;
-    void QRCode.toCanvas(ref.current, value, {
+    const el = ref.current;
+    if (!el) return;
+    void QRCode.toCanvas(el, value, {
       margin: 0,
       width: 420,
       color: { dark: "#07070f", light: "#ffffff" },
+    }).then(() => {
+      el.style.width = `${px}px`;
+      el.style.height = `${px}px`;
+      el.style.display = "block";
     });
-  }, [value]);
+  }, [value, px]);
   return (
     <div className="qr" style={{ width: size, height: size }}>
-      <canvas ref={ref} style={{ width: size - 14, height: size - 14, display: "block" }} />
+      <canvas ref={ref} />
     </div>
   );
 }
