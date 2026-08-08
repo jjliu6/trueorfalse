@@ -10,10 +10,14 @@ export const Route = createFileRoute("/")({
       { title: "TRUE or FALSE · 真真假假 | 破冰游戏" },
       {
         name: "description",
-        content: "线下 Hackathon 破冰游戏：每人写一真一假两个故事，其他人猜哪个是真的。输入房间码即可加入。",
+        content:
+          "线下 Hackathon 破冰游戏：每人写一真一假两个故事，其他人猜哪个是真的。输入房间码即可加入。",
       },
       { property: "og:title", content: "TRUE or FALSE · 真真假假" },
-      { property: "og:description", content: "一真一假两个故事，猜猜哪个是真的 —— 25 分钟破冰游戏。" },
+      {
+        property: "og:description",
+        content: "一真一假两个故事，猜猜哪个是真的 —— 25 分钟破冰游戏。",
+      },
     ],
   }),
   component: Index,
@@ -41,19 +45,26 @@ function Index() {
 
   const createRoom = async () => {
     setBusy(true);
-    const newCode = makeCode();
+    setErr("");
     const hostKey = makeHostKey();
-    const { data, error } = await supabase
-      .from("rooms")
-      .insert({ code: newCode, host_key: hostKey })
-      .select()
-      .single();
-    setBusy(false);
-    if (error || !data) {
-      setErr("房间创建失败，再试一次");
-      return;
+    // code 是 unique 的，撞了就换一个再试，别让用户看见"创建失败"
+    for (let attempt = 0; attempt < 5; attempt++) {
+      const newCode = makeCode();
+      const { data, error } = await supabase
+        .from("rooms")
+        .insert({ code: newCode, host_key: hostKey })
+        .select()
+        .single();
+      if (data && !error) {
+        setBusy(false);
+        void navigate({ to: "/screen/$code", params: { code: newCode }, search: { k: hostKey } });
+        return;
+      }
+      // 23505 = unique_violation，只有撞码才值得重试
+      if (error?.code !== "23505") break;
     }
-    void navigate({ to: "/screen/$code", params: { code: newCode }, search: { k: hostKey } });
+    setBusy(false);
+    setErr("房间创建失败，再试一次");
   };
 
   return (
@@ -67,10 +78,13 @@ function Index() {
               <span className="or">or</span>
               <span className="f">FALSE</span>
             </h1>
-            <div className="sub-cn" style={{ fontSize: 13 }}>真 真 假 假</div>
+            <div className="sub-cn" style={{ fontSize: 13 }}>
+              真 真 假 假
+            </div>
           </div>
           <p className="pdesc">
-            每人写一个真故事、一个编的，其他人猜哪个是真的。<br />
+            每人写一个真故事、一个编的，其他人猜哪个是真的。
+            <br />
             输入大屏上的房间码就能加入。
           </p>
           <div className="field">
@@ -85,7 +99,11 @@ function Index() {
               style={{ letterSpacing: ".18em", fontWeight: 800, fontSize: 20 }}
             />
           </div>
-          {err && <p className="pdesc" style={{ color: "var(--fake)" }}>{err}</p>}
+          {err && (
+            <p className="pdesc" style={{ color: "var(--fake)" }}>
+              {err}
+            </p>
+          )}
           <button className="btn" disabled={busy || !code.trim()} onClick={() => void join()}>
             加入房间 →
           </button>

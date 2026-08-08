@@ -23,6 +23,9 @@ export const Route = createFileRoute("/screen/$code")({
   component: ScreenPage,
 });
 
+/** 投票时长，改这里同时改倒计时圈的进度基准 */
+const VOTE_SECONDS = 20;
+
 const PHASE_LABEL: Record<string, string> = {
   lobby: "故事墙",
   stage: "上台",
@@ -56,8 +59,7 @@ function ScreenPage() {
   const left = useCountdown(room?.voting_ends_at);
   const phase = room?.phase ?? "lobby";
 
-  const joinUrl =
-    typeof window === "undefined" ? "" : `${window.location.origin}/play/${upper}`;
+  const joinUrl = typeof window === "undefined" ? "" : `${window.location.origin}/play/${upper}`;
 
   /* ---------------- 音效触发 ---------------- */
   const prevSubmitted = useRef(0);
@@ -115,6 +117,7 @@ function ScreenPage() {
   const spinPick = useCallback(() => {
     if (!room || spinning || remaining.length === 0) return;
     const target = remaining[Math.floor(Math.random() * remaining.length)]!;
+    timers.current = []; // 上一轮的 timeout 都已经跑完了，别让这个数组一场游戏下来一直涨
     setSpinning(true);
     setPickedId(null);
     let delay = 55;
@@ -164,7 +167,7 @@ function ScreenPage() {
     } else if (phase === "stage") {
       await setPhase({
         phase: "voting",
-        voting_ends_at: new Date(Date.now() + 20000).toISOString(),
+        voting_ends_at: new Date(Date.now() + VOTE_SECONDS * 1000).toISOString(),
       });
     } else if (phase === "voting") {
       if (room.current_player_id) {
@@ -174,7 +177,8 @@ function ScreenPage() {
       await setPhase({ phase: "reveal" });
     } else if (phase === "reveal") {
       const left2 = submitted.filter((p) => !p.turn_done && p.id !== room.current_player_id);
-      if (left2.length > 0) await setPhase({ phase: "lobby", current_player_id: null, voting_ends_at: null });
+      if (left2.length > 0)
+        await setPhase({ phase: "lobby", current_player_id: null, voting_ends_at: null });
       else await setPhase({ phase: "board", current_player_id: null });
     }
   }, [room, phase, remaining.length, spinning, spinPick, setPhase, submitted]);
@@ -183,7 +187,12 @@ function ScreenPage() {
     if (!room) return;
     if (phase === "stage") await setPhase({ phase: "lobby", current_player_id: null });
     else if (phase === "voting") await setPhase({ phase: "stage", voting_ends_at: null });
-    else if (phase === "reveal") await setPhase({ phase: "voting" });
+    // 回到投票要顺手续上倒计时，否则 voting_ends_at 还停在过去，所有人的投票按钮都是灰的
+    else if (phase === "reveal")
+      await setPhase({
+        phase: "voting",
+        voting_ends_at: new Date(Date.now() + VOTE_SECONDS * 1000).toISOString(),
+      });
     else if (phase === "board") await setPhase({ phase: "lobby" });
   }, [room, phase, setPhase]);
 
@@ -256,7 +265,7 @@ function ScreenPage() {
       disabled = submitted.length === 0;
     }
   } else if (phase === "stage") {
-    mainLabel = "🗳 开启投票 20s";
+    mainLabel = `🗳 开启投票 ${VOTE_SECONDS}s`;
     statusLine = `${current?.name ?? ""} 正在讲`;
   } else if (phase === "voting") {
     mainLabel = "✨ 揭晓答案";
@@ -302,7 +311,11 @@ function ScreenPage() {
         {isHost && (
           <>
             <div className={`hud${hudOn ? " show" : ""}`}>
-              <button className="hudbtn" disabled={disabled || spinning} onClick={() => void next()}>
+              <button
+                className="hudbtn"
+                disabled={disabled || spinning}
+                onClick={() => void next()}
+              >
                 {mainLabel}
               </button>
               <div className="hud-now">
@@ -380,9 +393,13 @@ function LobbyScene({
             <div className="sub-cn">真 真 假 假</div>
             <QR value={joinUrl} size={250} />
             <div style={{ textAlign: "center" }}>
-              <div className="code-label" style={{ marginBottom: 6 }}>扫码加入 · 或输入房间码</div>
+              <div className="code-label" style={{ marginBottom: 6 }}>
+                扫码加入 · 或输入房间码
+              </div>
               <div className="room-code">{code}</div>
-              <div className="url-hint" style={{ marginTop: 8 }}>{host}</div>
+              <div className="url-hint" style={{ marginTop: 8 }}>
+                {host}
+              </div>
             </div>
             <div className="tips">
               写一个真故事、一个编的 —— 一句话就行
@@ -457,7 +474,7 @@ function SpotScene({
   const fooledPct = total ? Math.round(((total - rightN) / total) * 100) : 0;
   const voters = players.filter((p) => p.id !== player.id);
   const votedIds = new Set(votes.map((v) => v.voter_id));
-  const pct = left > 0 ? (left / 20) * 100 : 0;
+  const pct = left > 0 ? Math.min(100, (left / VOTE_SECONDS) * 100) : 0;
 
   const cardClass = (k: "A" | "B") => {
     if (!revealed || !truth) return "";
@@ -582,7 +599,9 @@ function BoardScene({ players }: { players: Player[] }) {
               <div className="icon">🕵️</div>
               <div>
                 <div className="lab">最佳侦探</div>
-                <div className="who">{detective ? `${detective.avatar} ${detective.name}` : "—"}</div>
+                <div className="who">
+                  {detective ? `${detective.avatar} ${detective.name}` : "—"}
+                </div>
                 <div className="meta">猜对 {detective?.correct_count ?? 0} 次</div>
               </div>
             </div>

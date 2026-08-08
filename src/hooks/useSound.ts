@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 /**
  * 全部用 Web Audio API 现场合成，不加载任何音频文件 ——
@@ -35,14 +35,7 @@ export function useSound() {
 
   /** 8ms 线性起音 → 指数衰减到 0.0001，避免爆音 */
   const tone = useCallback(
-    (
-      type: OscillatorType,
-      freq: number,
-      dur: number,
-      vol: number,
-      delay = 0,
-      slideTo?: number,
-    ) => {
+    (type: OscillatorType, freq: number, dur: number, vol: number, delay = 0, slideTo?: number) => {
       const ac = ctx();
       if (!ac) return;
       const t0 = ac.currentTime + delay;
@@ -73,10 +66,7 @@ export function useSound() {
 
   const join = useCallback(() => tone("sine", 880, 0.16, 0.07, 0, 1320), [tone]);
 
-  const roll = useCallback(
-    () => tone("square", 600 + Math.random() * 500, 0.035, 0.035),
-    [tone],
-  );
+  const roll = useCallback(() => tone("square", 600 + Math.random() * 500, 0.035, 0.035), [tone]);
 
   const chime = useCallback(() => {
     [523, 659, 784, 1046].forEach((f, i) => tone("sine", f, 0.42, 0.09, i * 0.075));
@@ -108,5 +98,9 @@ export function useSound() {
     src.start();
   }, [tone]);
 
-  return { muted, setMuted, tick, ding, join, roll, chime, fanfare, boom };
+  // 返回值被当成 useEffect 依赖用，必须保持引用稳定，否则每次渲染 effect 都会重跑
+  return useMemo(
+    () => ({ muted, setMuted, tick, ding, join, roll, chime, fanfare, boom }),
+    [muted, tick, ding, join, roll, chime, fanfare, boom],
+  );
 }
