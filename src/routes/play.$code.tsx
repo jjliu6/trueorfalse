@@ -298,7 +298,7 @@ function PlayPage() {
           {(["A", "B"] as const).map((k) => (
             <button
               key={k}
-              className={`opt${myVote?.choice === k ? " sel" : ""}`}
+              className={`opt${shownChoice === k ? " sel" : ""}`}
               type="button"
               onClick={() => void castVote(k)}
             >
@@ -307,8 +307,11 @@ function PlayPage() {
             </button>
           ))}
         </div>
+        {voteErr && (
+          <p className="pdesc" style={{ color: "var(--fake)", textAlign: "center" }}>{voteErr}</p>
+        )}
         <div className="countdown">
-          {myVote ? "已锁定，可以改，但只剩 " : "还剩 "}
+          {shownChoice ? "已锁定，可以改，但只剩 " : "还剩 "}
           <b>{left}</b> 秒
         </div>
       </div>
