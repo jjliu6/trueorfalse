@@ -1,25 +1,24 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useState } from "react";
 import QRCode from "qrcode";
 
 export function QR({ value, size }: { value: string; size: number }) {
-  const ref = useRef<HTMLCanvasElement | null>(null);
-  const px = size - 14;
+  const [src, setSrc] = useState("");
   useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    void QRCode.toCanvas(el, value, {
+    let alive = true;
+    void QRCode.toDataURL(value, {
       margin: 0,
       width: 420,
       color: { dark: "#07070f", light: "#ffffff" },
-    }).then(() => {
-      el.style.width = `${px}px`;
-      el.style.height = `${px}px`;
-      el.style.display = "block";
+    }).then((url) => {
+      if (alive) setSrc(url);
     });
-  }, [value, px]);
+    return () => {
+      alive = false;
+    };
+  }, [value]);
   return (
     <div className="qr" style={{ width: size, height: size }}>
-      <canvas ref={ref} />
+      {src ? <img src={src} alt="Join QR code" width={size - 14} height={size - 14} /> : null}
     </div>
   );
 }
