@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Backdrop } from "@/components/tof/Backdrop";
 import { useCountdown, useRoom } from "@/hooks/useRoom";
-import { AVATARS, playerKey, type Player } from "@/lib/tof";
+import { AVATARS, playerKey, type Player, type Vote } from "@/lib/tof";
 
 export const Route = createFileRoute("/play/$code")({
   head: () => ({
