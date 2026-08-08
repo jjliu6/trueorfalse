@@ -37,7 +37,9 @@ function PlayPage() {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
   // 本地乐观选择：点了就立刻高亮，不等实时推送回来
-  const [localChoice, setLocalChoice] = useState<{ target: string; choice: "A" | "B" } | null>(null);
+  const [localChoice, setLocalChoice] = useState<{ target: string; choice: "A" | "B" } | null>(
+    null,
+  );
   const [voteErr, setVoteErr] = useState("");
 
   useEffect(() => {
@@ -85,7 +87,16 @@ function PlayPage() {
       return;
     }
     const player = data as Player;
-    await supabase.from("player_secrets").insert({ player_id: player.id, truth });
+    // 没有 secret 就没法揭晓/结算，这一轮会永远卡在"还没讲完"——所以写不进去就把人也撤回
+    const { error: secretErr } = await supabase
+      .from("player_secrets")
+      .insert({ player_id: player.id, truth });
+    if (secretErr) {
+      await supabase.from("players").delete().eq("id", player.id);
+      setBusy(false);
+      setErr("提交失败，再试一次");
+      return;
+    }
     localStorage.setItem(playerKey(upper), player.id);
     setMyId(player.id);
     setBusy(false);
@@ -93,6 +104,8 @@ function PlayPage() {
 
   const castVote = async (choice: "A" | "B") => {
     if (!room || !current || !myId) return;
+    // 倒计时归零后大屏随时可能揭晓，这时再放票进来就成了"看完答案再投"
+    if (room.phase !== "voting" || left <= 0) return;
     const targetId = current.id;
     setLocalChoice({ target: targetId, choice });
     setVoteErr("");
@@ -241,7 +254,11 @@ function PlayPage() {
                   </button>
                 </div>
               </div>
-              {err && <p className="pdesc" style={{ color: "var(--fake)" }}>{err}</p>}
+              {err && (
+                <p className="pdesc" style={{ color: "var(--fake)" }}>
+                  {err}
+                </p>
+              )}
               <button
                 className="btn"
                 disabled={busy || !truth || !storyA.trim() || !storyB.trim()}
@@ -279,7 +296,7 @@ function PlayPage() {
     body = (
       <div className="pstep">
         <div className="result-hero">
-          <div className="big">{isMyTurn ? "🎤" : current?.avatar ?? "👂"}</div>
+          <div className="big">{isMyTurn ? "🎤" : (current?.avatar ?? "👂")}</div>
           <h3>{isMyTurn ? "该你上台了" : `${current?.name ?? "有人"} 正在讲`}</h3>
           <p>{isMyTurn ? "把两个故事都讲一遍，别露馅" : "认真听 —— 等下要投票"}</p>
         </div>
@@ -306,6 +323,7 @@ function PlayPage() {
               key={k}
               className={`opt${shownChoice === k ? " sel" : ""}`}
               type="button"
+              disabled={left <= 0}
               onClick={() => void castVote(k)}
             >
               <span className="k">{k}</span>
@@ -314,11 +332,19 @@ function PlayPage() {
           ))}
         </div>
         {voteErr && (
-          <p className="pdesc" style={{ color: "var(--fake)", textAlign: "center" }}>{voteErr}</p>
+          <p className="pdesc" style={{ color: "var(--fake)", textAlign: "center" }}>
+            {voteErr}
+          </p>
         )}
         <div className="countdown">
-          {shownChoice ? "已锁定，可以改，但只剩 " : "还剩 "}
-          <b>{left}</b> 秒
+          {left <= 0 ? (
+            "时间到，等大屏揭晓"
+          ) : (
+            <>
+              {shownChoice ? "已锁定，可以改，但只剩 " : "还剩 "}
+              <b>{left}</b> 秒
+            </>
+          )}
         </div>
       </div>
     );
@@ -326,14 +352,18 @@ function PlayPage() {
     const t = current?.revealed_truth;
     const targetVotes = votes.filter((v) => v.target_id === current?.id);
     const total = targetVotes.length;
-    const fooled = total ? Math.round(((total - targetVotes.filter((v) => v.choice === t).length) / total) * 100) : 0;
+    const fooled = total
+      ? Math.round(((total - targetVotes.filter((v) => v.choice === t).length) / total) * 100)
+      : 0;
     if (isMyTurn) {
       body = (
         <div className="pstep">
           <div className="result-hero">
             <div className="big">{fooled > 50 ? "😈" : "🕵️"}</div>
             <h3>{fooled > 50 ? "骗术大师！" : "被识破了"}</h3>
-            <p>你骗过了 {fooled}% 的人（{total} 人投票）</p>
+            <p>
+              你骗过了 {fooled}% 的人（{total} 人投票）
+            </p>
             <div className="chip">当前 {me.score ?? 0} 分</div>
           </div>
         </div>
@@ -366,14 +396,19 @@ function PlayPage() {
       );
     }
   } else {
-    const ranked = [...players].sort((a, b) => (b.score ?? 0) - (a.score ?? 0));
+    // 大屏榜单只排已提交的人，这里要跟它一致，否则两边名次对不上
+    const ranked = players
+      .filter((p) => p.submitted)
+      .sort((a, b) => (b.score ?? 0) - (a.score ?? 0));
     const rank = ranked.findIndex((p) => p.id === me.id) + 1;
     body = (
       <div className="pstep">
         <div className="result-hero">
           <div className="big">{rank === 1 ? "🏆" : "🎊"}</div>
           <h3>第 {rank} 名</h3>
-          <p>共 {me.score ?? 0} 分 · 猜对 {me.correct_count ?? 0} 次 · 骗到 {me.fooled_pct ?? 0}%</p>
+          <p>
+            共 {me.score ?? 0} 分 · 猜对 {me.correct_count ?? 0} 次 · 骗到 {me.fooled_pct ?? 0}%
+          </p>
           <div className="chip">抬头看大屏，念奖了</div>
         </div>
       </div>
