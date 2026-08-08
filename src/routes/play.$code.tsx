@@ -299,6 +299,7 @@ function PlayPage() {
             <button
               key={k}
               className={`opt${myVote?.choice === k ? " sel" : ""}`}
+              type="button"
               onClick={() => void castVote(k)}
             >
               <span className="k">{k}</span>
