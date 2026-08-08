@@ -44,6 +44,12 @@ function PlayPage() {
     setMyId(localStorage.getItem(playerKey(upper)));
   }, [upper]);
 
+  // 换人时清掉上一轮的本地选择
+  useEffect(() => {
+    setLocalChoice(null);
+    setVoteErr("");
+  }, [room?.current_player_id]);
+
   const me = useMemo(() => players.find((p) => p.id === myId) ?? null, [players, myId]);
   const current = useMemo(
     () => players.find((p) => p.id === room?.current_player_id) ?? null,
