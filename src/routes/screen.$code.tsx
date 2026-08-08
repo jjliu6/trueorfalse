@@ -145,7 +145,11 @@ function ScreenPage() {
 
   /* ---------------- 主持人操作 ---------------- */
   const setPhase = useCallback(
-    async (patch: Record<string, unknown>) => {
+    async (patch: {
+      phase?: string;
+      current_player_id?: string | null;
+      voting_ends_at?: string | null;
+    }) => {
       if (!room) return;
       await supabase.from("rooms").update(patch).eq("id", room.id);
     },
