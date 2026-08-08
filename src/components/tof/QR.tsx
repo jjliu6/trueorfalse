@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import QRCode from "qrcode";
 
-export function QR({ value, className }: { value: string; className?: string }) {
+export function QR({ value, size }: { value: string; size: number }) {
   const ref = useRef<HTMLCanvasElement | null>(null);
   useEffect(() => {
     if (!ref.current) return;
@@ -12,7 +12,7 @@ export function QR({ value, className }: { value: string; className?: string }) 
     });
   }, [value]);
   return (
-    <div className={`qr ${className ?? ""}`}>
+    <div className="qr" style={{ width: size, height: size }}>
       <canvas ref={ref} />
     </div>
   );
