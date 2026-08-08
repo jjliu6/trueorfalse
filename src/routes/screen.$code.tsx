@@ -365,7 +365,7 @@ function LobbyScene({
           <div className="spacer" />
           {!empty && (
             <div className="joinchip">
-              <QR value={joinUrl} />
+              <QR value={joinUrl} size={86} />
               <div>
                 <div className="code-label">扫码加入</div>
                 <div className="room-code">{code}</div>
@@ -378,7 +378,7 @@ function LobbyScene({
         {empty ? (
           <div className="empty-cta">
             <div className="sub-cn">真 真 假 假</div>
-            <QR value={joinUrl} />
+            <QR value={joinUrl} size={250} />
             <div style={{ textAlign: "center" }}>
               <div className="code-label" style={{ marginBottom: 6 }}>扫码加入 · 或输入房间码</div>
               <div className="room-code">{code}</div>
