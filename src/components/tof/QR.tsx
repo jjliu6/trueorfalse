@@ -13,7 +13,7 @@ export function QR({ value, size }: { value: string; size: number }) {
   }, [value]);
   return (
     <div className="qr" style={{ width: size, height: size }}>
-      <canvas ref={ref} />
+      <canvas ref={ref} style={{ width: size - 14, height: size - 14, display: "block" }} />
     </div>
   );
 }
