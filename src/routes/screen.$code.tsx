@@ -460,7 +460,7 @@ function SpotScene({
   const pct = left > 0 ? (left / 20) * 100 : 0;
 
   const cardClass = (k: "A" | "B") => {
-    if (!revealed) return "";
+    if (!revealed || !truth) return "";
     return truth === k ? " is-true revealed" : " is-fake revealed";
   };
 
@@ -496,7 +496,7 @@ function SpotScene({
                 </div>
                 <div className="txt">{k === "A" ? player.story_a : player.story_b}</div>
                 <div className="stampslot">
-                  {revealed && (
+                  {revealed && truth && (
                     <div className={`stamp show ${isTrue ? "true" : "fake"}`}>
                       {isTrue ? "TRUE" : "FAKE"}
                     </div>
