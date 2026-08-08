@@ -25,7 +25,7 @@ function Counter({ n }: { n: number }) {
 function PlayPage() {
   const { code } = Route.useParams();
   const upper = code.toUpperCase();
-  const { room, players, votes, loading, missing } = useRoom(upper);
+  const { room, players, votes, loading, missing, setVotes } = useRoom(upper);
 
   const [myId, setMyId] = useState<string | null>(null);
   const [step, setStep] = useState<"nick" | "form">("nick");
@@ -36,6 +36,9 @@ function PlayPage() {
   const [truth, setTruth] = useState<"A" | "B" | null>(null);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
+  // 本地乐观选择：点了就立刻高亮，不等实时推送回来
+  const [localChoice, setLocalChoice] = useState<{ target: string; choice: "A" | "B" } | null>(null);
+  const [voteErr, setVoteErr] = useState("");
 
   useEffect(() => {
     setMyId(localStorage.getItem(playerKey(upper)));
@@ -50,6 +53,8 @@ function PlayPage() {
     () => votes.find((v) => v.target_id === current?.id && v.voter_id === myId) ?? null,
     [votes, current?.id, myId],
   );
+  const shownChoice =
+    localChoice && localChoice.target === current?.id ? localChoice.choice : myVote?.choice;
   const left = useCountdown(room?.voting_ends_at);
 
   const submit = async () => {
@@ -82,12 +87,31 @@ function PlayPage() {
 
   const castVote = async (choice: "A" | "B") => {
     if (!room || !current || !myId) return;
-    await supabase
+    const targetId = current.id;
+    setLocalChoice({ target: targetId, choice });
+    setVoteErr("");
+    const { data, error } = await supabase
       .from("votes")
       .upsert(
-        { room_id: room.id, target_id: current.id, voter_id: myId, choice },
+        { room_id: room.id, target_id: targetId, voter_id: myId, choice },
         { onConflict: "target_id,voter_id" },
-      );
+      )
+      .select()
+      .single();
+    if (error || !data) {
+      setLocalChoice(null);
+      setVoteErr("没投上，再点一次");
+      return;
+    }
+    // 不依赖实时推送，直接把自己的票写进本地状态
+    const row = data as Vote;
+    setVotes((prev) => {
+      const i = prev.findIndex((v) => v.id === row.id);
+      if (i === -1) return [...prev, row];
+      const next = prev.slice();
+      next[i] = row;
+      return next;
+    });
   };
 
   if (loading) {
