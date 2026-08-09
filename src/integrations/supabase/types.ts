@@ -126,12 +126,34 @@ export type Database = {
           },
         ]
       }
+      room_hosts: {
+        Row: {
+          host_key: string
+          room_id: string
+        }
+        Insert: {
+          host_key: string
+          room_id: string
+        }
+        Update: {
+          host_key?: string
+          room_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "room_hosts_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: true
+            referencedRelation: "rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       rooms: {
         Row: {
           code: string
           created_at: string | null
           current_player_id: string | null
-          host_key: string
           id: string
           phase: string
           voting_ends_at: string | null
@@ -140,7 +162,6 @@ export type Database = {
           code: string
           created_at?: string | null
           current_player_id?: string | null
-          host_key: string
           id?: string
           phase?: string
           voting_ends_at?: string | null
@@ -149,7 +170,6 @@ export type Database = {
           code?: string
           created_at?: string | null
           current_player_id?: string | null
-          host_key?: string
           id?: string
           phase?: string
           voting_ends_at?: string | null
@@ -212,6 +232,10 @@ export type Database = {
     Functions: {
       reveal_truth: { Args: { p_player: string }; Returns: string }
       settle_round: { Args: { p_player: string }; Returns: undefined }
+      verify_host_key: {
+        Args: { p_key: string; p_room_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never
