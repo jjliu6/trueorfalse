@@ -111,6 +111,9 @@ function Index() {
           <button className="btn ghost" disabled={busy} onClick={() => void createRoom()}>
             🖥 我是主持人 · 开一个新房间
           </button>
+          <a className="minibtn" href="/history" style={{ justifyContent: "center" }}>
+            📚 主持人登录 · 保存 / 导出 / 回看记录
+          </a>
         </div>
       </main>
     </>
