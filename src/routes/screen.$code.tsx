@@ -381,6 +381,7 @@ function BoardScene({
   const boardRef = useRef<HTMLDivElement>(null);
   const { session, ready } = useSession();
   const [busy, setBusy] = useState<"save" | "png" | null>(null);
+  const [saved, setSaved] = useState(false);
   const [tip, setTip] = useState("");
   const snapshot = useMemo(() => buildSnapshot(code, players), [code, players]);
 
@@ -388,19 +389,41 @@ function BoardScene({
   const backTo = `/screen/${code}${hostKey ? `?k=${encodeURIComponent(hostKey)}` : ""}`;
   const gateHref = `/auth?redirect=${encodeURIComponent(backTo)}`;
 
-  const save = async () => {
-    if (!session) return;
-    setBusy("save");
-    setTip("");
-    const { error } = await supabase.from("game_records").insert({
-      user_id: session.user.id,
-      room_code: code,
-      title: `${code} · ${players.length} 人`,
-      snapshot: snapshot as unknown as never,
-    });
-    setBusy(null);
-    setTip(error ? t("board.save.err", { msg: error.message }) : t("board.save.ok"));
-  };
+  // 已登录就自动存，不需要主持人再手动点一下「保存」——
+  // 先查这个账号 + 这个房间码有没有存过，有就更新，没有就插入一条，
+  // 这样主持人从榜单退回去改分数、再回到榜单时也不会攒出一堆重复记录
+  useEffect(() => {
+    if (!ready || !session) return;
+    let cancelled = false;
+    void (async () => {
+      setBusy("save");
+      setTip("");
+      const { data: existing } = await supabase
+        .from("game_records")
+        .select("id")
+        .eq("user_id", session.user.id)
+        .eq("room_code", code)
+        .maybeSingle();
+      if (cancelled) return;
+      const payload = {
+        user_id: session.user.id,
+        room_code: code,
+        title: `${code} · ${players.length} 人`,
+        snapshot: snapshot as unknown as never,
+      };
+      const { error } = existing
+        ? await supabase.from("game_records").update(payload).eq("id", existing.id)
+        : await supabase.from("game_records").insert(payload);
+      if (cancelled) return;
+      setBusy(null);
+      setSaved(!error);
+      setTip(error ? t("board.save.err", { msg: error.message }) : "");
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ready, session, code, snapshot]);
 
   const exportPng = async () => {
     if (!session || !boardRef.current) return;
@@ -430,9 +453,9 @@ function BoardScene({
       <div className="board-actions">
         {!ready ? null : session ? (
           <>
-            <button className="minibtn" disabled={busy !== null} onClick={() => void save()}>
-              {busy === "save" ? t("board.save.busy") : t("board.save")}
-            </button>
+            <span className="board-gate">
+              {busy === "save" ? t("board.save.busy") : saved ? t("board.save.auto") : ""}
+            </span>
             <button className="minibtn" disabled={busy !== null} onClick={() => void exportPng()}>
               {busy === "png" ? t("board.export.busy") : t("board.export")}
             </button>
