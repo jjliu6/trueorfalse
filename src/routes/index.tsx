@@ -96,57 +96,63 @@ function Index() {
       <Backdrop />
       <main className="phone-root">
         <div className="pstep">
-          <div>
-            <h1 className="wordmark" style={{ fontSize: 40 }}>
-              <span className="t">TRUE</span>
-              <span className="or">or</span>
-              <span className="f">FALSE</span>
-            </h1>
-            <div className="sub-cn" style={{ fontSize: 13 }}>
-              {t("home.title.sub")}
-            </div>
-            {stats && (
-              <div
-                style={{
-                  display: "flex",
-                  gap: 18,
-                  marginTop: 14,
-                  fontSize: 12.5,
-                  color: "var(--muted, rgba(255,255,255,.6))",
-                }}
-              >
-                <span>{t("home.stats.rooms", { n: stats.rooms })}</span>
-                <span>{t("home.stats.players", { n: stats.players })}</span>
+          <div className="home-main">
+            <div>
+              <h1 className="wordmark" style={{ fontSize: 40 }}>
+                <span className="t">TRUE</span>
+                <span className="or">or</span>
+                <span className="f">FALSE</span>
+              </h1>
+              <div className="sub-cn" style={{ fontSize: 13 }}>
+                {t("home.title.sub")}
               </div>
-            )}
-          </div>
-          <p className="pdesc" style={{ whiteSpace: "pre-line" }}>
-            {t("home.desc")}
-          </p>
-          <div className="field">
-            <label htmlFor="code">{t("home.code.label")}</label>
-            <input
-              id="code"
-              value={code}
-              autoCapitalize="characters"
-              placeholder={t("home.code.placeholder")}
-              onChange={(e) => setCode(e.target.value.toUpperCase())}
-              onKeyDown={(e) => e.key === "Enter" && void join()}
-              style={{ letterSpacing: ".18em", fontWeight: 800, fontSize: 20 }}
-            />
-          </div>
-          {err && (
-            <p className="pdesc" style={{ color: "var(--fake)" }}>
-              {err}
+              {stats && (
+                <div
+                  style={{
+                    display: "flex",
+                    gap: 18,
+                    marginTop: 14,
+                    fontSize: 12.5,
+                    color: "var(--muted, rgba(255,255,255,.6))",
+                  }}
+                >
+                  <span>{t("home.stats.rooms", { n: stats.rooms })}</span>
+                  <span>{t("home.stats.players", { n: stats.players })}</span>
+                </div>
+              )}
+            </div>
+            <p className="pdesc" style={{ whiteSpace: "pre-line" }}>
+              {t("home.desc")}
             </p>
-          )}
-          <button className="btn" disabled={busy || !code.trim()} onClick={() => void join()}>
-            {t("home.join")}
-          </button>
-          <div style={{ flex: 1 }} />
-          <button className="btn ghost" disabled={busy} onClick={() => void createRoom()}>
-            {t("home.host")}
-          </button>
+            <div className="field">
+              <label htmlFor="code">{t("home.code.label")}</label>
+              <input
+                id="code"
+                value={code}
+                autoCapitalize="characters"
+                placeholder={t("home.code.placeholder")}
+                onChange={(e) => setCode(e.target.value.toUpperCase())}
+                onKeyDown={(e) => e.key === "Enter" && void join()}
+                style={{ letterSpacing: ".18em", fontWeight: 800, fontSize: 20 }}
+              />
+            </div>
+            {err && (
+              <p className="pdesc" style={{ color: "var(--fake)" }}>
+                {err}
+              </p>
+            )}
+            <button className="btn" disabled={busy || !code.trim()} onClick={() => void join()}>
+              {t("home.join")}
+            </button>
+          </div>
+          <div className="home-footer">
+            <button className="btn ghost" disabled={busy} onClick={() => void createRoom()}>
+              {t("home.host")}
+            </button>
+            <a className="minibtn" href="/history" style={{ justifyContent: "center" }}>
+              {t("home.host.login")}
+            </a>
+          </div>
         </div>
       </main>
     </>

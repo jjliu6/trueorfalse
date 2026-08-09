@@ -490,7 +490,45 @@ body.tof-lock {
 .keyhint b { color: rgba(255,255,255,.5); }
 .keyhint.hide { opacity: 0; }
 
+.screen-footer { position: fixed; left: 24px; bottom: 20px; z-index: 68; font-size: 12px; color: rgba(255,255,255,.28);
+  text-decoration: none; transition: color .3s; pointer-events: auto; }
+.screen-footer:hover { color: rgba(255,255,255,.55); text-decoration: underline; }
+
 @media (max-width: 860px) {
-  .cards { grid-template-columns: 1fr; gap: 14px; }
-  .story { height: auto; min-height: 150px; }
+  .screen-footer { left: 16px; bottom: 16px; font-size: 11px; }
 }
+
+/* ===== 记录 / 导出 / 历史 ===== */
+.minibtn { display: inline-flex; align-items: center; gap: 6px; font-family: inherit; font-size: 13px;
+  font-weight: 700; color: var(--ink); text-decoration: none; padding: 9px 14px; border-radius: 999px;
+  border: 1px solid var(--line); background: rgba(255,255,255,.06); cursor: pointer;
+  touch-action: manipulation; transition: background .15s, border-color .15s; }
+.minibtn:hover { background: rgba(255,255,255,.12); border-color: var(--brand-2); }
+.minibtn:disabled { opacity: .45; cursor: default; }
+.minibtn.danger:hover { border-color: var(--fake); color: var(--fake); }
+
+.board-actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
+  gap: 10px; margin-top: 16px; }
+.board-gate { font-size: 12px; color: var(--muted); letter-spacing: .04em; }
+
+.hist-root { position: relative; z-index: 10; min-height: 100dvh; max-width: 980px; margin: 0 auto;
+  padding: 26px 18px 60px; display: flex; flex-direction: column; gap: 16px; }
+.hist-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.hist-list { display: flex; flex-direction: column; gap: 10px; }
+.hist-item { display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 14px 16px; border-radius: 16px; border: 1px solid var(--line); background: rgba(255,255,255,.04); }
+.hist-title { font-weight: 800; font-size: 15px; }
+.hist-meta { font-size: 12px; color: var(--muted); margin-top: 3px; }
+.hist-view { display: flex; flex-direction: column; gap: 16px; margin-top: 8px; }
+.hist-stories { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+.hist-story { padding: 14px 16px; border-radius: 16px; border: 1px solid var(--line);
+  background: rgba(255,255,255,.04); display: flex; flex-direction: column; gap: 8px; }
+.hist-line { font-size: 13px; color: var(--muted); display: flex; gap: 8px; align-items: baseline; }
+.hist-line i { font-style: normal; font-weight: 800; color: var(--ink); opacity: .6; }
+.hist-line.true { color: var(--ink); }
+.hist-line.true i { color: var(--brand-2); opacity: 1; }
+
+/* ---------- 首页垂直居中 ---------- */
+.home-main { flex: 1; display: flex; flex-direction: column; gap: 14px; justify-content: center; min-height: 0; padding: 10vh 0; }
+.home-footer { display: flex; flex-direction: column; gap: 10px; padding: 14px 0 8px; }
+.home-footer .minibtn { justify-content: center; }

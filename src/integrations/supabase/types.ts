@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      game_records: {
+        Row: {
+          created_at: string
+          id: string
+          played_at: string
+          room_code: string
+          snapshot: Json
+          title: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          played_at?: string
+          room_code: string
+          snapshot: Json
+          title?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          played_at?: string
+          room_code?: string
+          snapshot?: Json
+          title?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       player_secrets: {
         Row: {
           player_id: string

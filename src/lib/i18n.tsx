@@ -21,6 +21,7 @@ const ZH: Dict = {
   "home.err.create": "房间创建失败，再试一次",
   "home.join": "加入房间 →",
   "home.host": "🖥 我是主持人 · 开一个新房间",
+  "home.host.login": "📚 主持人登录 · 保存 / 导出 / 回看记录",
 
   "play.connecting": "正在连接房间…",
   "play.missing.title": "房间不存在",
@@ -139,6 +140,7 @@ const EN: Dict = {
   "home.err.create": "Couldn't create the room, try again",
   "home.join": "Join room →",
   "home.host": "🖥 I'm the host · start a new room",
+  "home.host.login": "📚 Host login · save / export / view history",
 
   "play.connecting": "Connecting to the room…",
   "play.missing.title": "Room not found",
