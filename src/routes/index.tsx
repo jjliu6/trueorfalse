@@ -72,48 +72,51 @@ function Index() {
       <Backdrop />
       <main className="phone-root">
         <div className="pstep">
-          <div>
-            <h1 className="wordmark" style={{ fontSize: 40 }}>
-              <span className="t">TRUE</span>
-              <span className="or">or</span>
-              <span className="f">FALSE</span>
-            </h1>
-            <div className="sub-cn" style={{ fontSize: 13 }}>
-              真 真 假 假
+          <div className="home-main">
+            <div>
+              <h1 className="wordmark" style={{ fontSize: 40 }}>
+                <span className="t">TRUE</span>
+                <span className="or">or</span>
+                <span className="f">FALSE</span>
+              </h1>
+              <div className="sub-cn" style={{ fontSize: 13 }}>
+                真 真 假 假
+              </div>
             </div>
-          </div>
-          <p className="pdesc">
-            每人写一个真故事、一个编的，其他人猜哪个是真的。
-            <br />
-            输入大屏上的房间码就能加入。
-          </p>
-          <div className="field">
-            <label htmlFor="code">房间码</label>
-            <input
-              id="code"
-              value={code}
-              autoCapitalize="characters"
-              placeholder="例如 TFABCD"
-              onChange={(e) => setCode(e.target.value.toUpperCase())}
-              onKeyDown={(e) => e.key === "Enter" && void join()}
-              style={{ letterSpacing: ".18em", fontWeight: 800, fontSize: 20 }}
-            />
-          </div>
-          {err && (
-            <p className="pdesc" style={{ color: "var(--fake)" }}>
-              {err}
+            <p className="pdesc">
+              每人写一个真故事、一个编的，其他人猜哪个是真的。
+              <br />
+              输入大屏上的房间码就能加入。
             </p>
-          )}
-          <button className="btn" disabled={busy || !code.trim()} onClick={() => void join()}>
-            加入房间 →
-          </button>
-          <div style={{ flex: 1 }} />
-          <button className="btn ghost" disabled={busy} onClick={() => void createRoom()}>
-            🖥 我是主持人 · 开一个新房间
-          </button>
-          <a className="minibtn" href="/history" style={{ justifyContent: "center" }}>
-            📚 主持人登录 · 保存 / 导出 / 回看记录
-          </a>
+            <div className="field">
+              <label htmlFor="code">房间码</label>
+              <input
+                id="code"
+                value={code}
+                autoCapitalize="characters"
+                placeholder="例如 TFABCD"
+                onChange={(e) => setCode(e.target.value.toUpperCase())}
+                onKeyDown={(e) => e.key === "Enter" && void join()}
+                style={{ letterSpacing: ".18em", fontWeight: 800, fontSize: 20 }}
+              />
+            </div>
+            {err && (
+              <p className="pdesc" style={{ color: "var(--fake)" }}>
+                {err}
+              </p>
+            )}
+            <button className="btn" disabled={busy || !code.trim()} onClick={() => void join()}>
+              加入房间 →
+            </button>
+          </div>
+          <div className="home-footer">
+            <button className="btn ghost" disabled={busy} onClick={() => void createRoom()}>
+              🖥 我是主持人 · 开一个新房间
+            </button>
+            <a className="minibtn" href="/history" style={{ justifyContent: "center" }}>
+              📚 主持人登录 · 保存 / 导出 / 回看记录
+            </a>
+          </div>
         </div>
       </main>
     </>
