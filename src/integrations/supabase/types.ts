@@ -230,8 +230,56 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      create_room_with_host: {
+        Args: { p_code: string; p_key: string }
+        Returns: {
+          code: string
+          created_at: string | null
+          current_player_id: string | null
+          id: string
+          phase: string
+          voting_ends_at: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "rooms"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       reveal_truth: { Args: { p_player: string }; Returns: string }
       settle_round: { Args: { p_player: string }; Returns: undefined }
+      submit_player: {
+        Args: {
+          p_avatar: string
+          p_name: string
+          p_room_id: string
+          p_story_a: string
+          p_story_b: string
+          p_truth: string
+        }
+        Returns: {
+          avatar: string | null
+          correct_count: number | null
+          created_at: string | null
+          fooled_pct: number | null
+          id: string
+          name: string
+          revealed_truth: string | null
+          room_id: string
+          score: number | null
+          story_a: string | null
+          story_b: string | null
+          submitted: boolean | null
+          turn_done: boolean | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "players"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       verify_host_key: {
         Args: { p_key: string; p_room_id: string }
         Returns: boolean
