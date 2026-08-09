@@ -232,7 +232,10 @@ export type Database = {
     Functions: {
       reveal_truth: { Args: { p_player: string }; Returns: string }
       settle_round: { Args: { p_player: string }; Returns: undefined }
-      verify_host_key: { Args: { p_room_id: string; p_key: string }; Returns: boolean }
+      verify_host_key: {
+        Args: { p_key: string; p_room_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never
