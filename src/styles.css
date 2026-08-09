@@ -527,3 +527,8 @@ body.tof-lock {
 .hist-line i { font-style: normal; font-weight: 800; color: var(--ink); opacity: .6; }
 .hist-line.true { color: var(--ink); }
 .hist-line.true i { color: var(--brand-2); opacity: 1; }
+
+/* ---------- 首页垂直居中 ---------- */
+.home-main { flex: 1; display: flex; flex-direction: column; gap: 14px; justify-content: center; min-height: 0; padding: 10vh 0; }
+.home-footer { display: flex; flex-direction: column; gap: 10px; padding: 14px 0 8px; }
+.home-footer .minibtn { justify-content: center; }
