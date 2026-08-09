@@ -26,6 +26,8 @@ const ZH: Dict = {
 
   "demo.banner": "🎬 自动演示 · 当前：{{phase}} · 全部是虚拟数据",
   "demo.cta": "退出演示，开一局真的 →",
+  "demo.start": "▶ 点击开始演示",
+  "demo.start.hint": "浏览器需要一次点击才能播放音效 —— 点一下，动效和音效就都有了。",
 
   "play.connecting": "正在连接房间…",
   "play.missing.title": "房间不存在",
@@ -190,6 +192,9 @@ const EN: Dict = {
 
   "demo.banner": "🎬 Auto demo · now: {{phase}} · all data is fake",
   "demo.cta": "Exit demo, start a real game →",
+  "demo.start": "▶ Click to start the demo",
+  "demo.start.hint":
+    "Browsers require a click before they'll play sound — tap once to get the full effect.",
 
   "play.connecting": "Connecting to the room…",
   "play.missing.title": "Room not found",

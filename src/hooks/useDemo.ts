@@ -48,10 +48,24 @@ export function useDemo(lang: Lang) {
   const snd = useSound();
   const { fire, ref: confettiRef } = useConfetti();
   const [state, setState] = useState<DemoState>(initState);
+  const [started, setStarted] = useState(false);
   const cancelledRef = useRef(false);
   const timeouts = useRef<number[]>([]);
   const langRef = useRef(lang);
   langRef.current = lang;
+  // 浏览器的自动播放策略：AudioContext 必须在一次真实的用户手势（点击/按键）
+  // 之后才允许发声。这个引擎一上路由就自己跑起来，没有天然的"用户点了一下"，
+  // 所以演示得先卡在一个"点击开始"的门上——那一下点击既触发 start()，
+  // 也顺带把 useSound 里全局挂的 pointerdown 解锁监听器一起触发了。
+  const startResolvers = useRef<(() => void)[]>([]);
+  const startedRef = useRef(false);
+  const start = useRef(() => {
+    if (startedRef.current) return;
+    startedRef.current = true;
+    setStarted(true);
+    startResolvers.current.forEach((resolve) => resolve());
+    startResolvers.current = [];
+  }).current;
 
   useEffect(() => {
     cancelledRef.current = false;
@@ -62,8 +76,16 @@ export function useDemo(lang: Lang) {
         const id = window.setTimeout(resolve, ms);
         timeouts.current.push(id);
       });
+    const waitStart = () => {
+      if (startedRef.current) return Promise.resolve();
+      return new Promise<void>((resolve) => {
+        startResolvers.current.push(resolve);
+      });
+    };
 
     void (async function loop() {
+      await waitStart();
+      if (!alive()) return;
       let cycle = 0;
       while (alive()) {
         await runCycle(cycle);
@@ -277,5 +299,5 @@ export function useDemo(lang: Lang) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  return { ...state, muted: snd.muted, setMuted: snd.setMuted, confettiRef };
+  return { ...state, started, start, muted: snd.muted, setMuted: snd.setMuted, confettiRef };
 }

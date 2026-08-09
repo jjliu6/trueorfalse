@@ -90,6 +90,15 @@ function DemoPage() {
             {t("demo.cta")}
           </Link>
         </div>
+
+        {!demo.started && (
+          <div className="demo-gate">
+            <button className="btn" onClick={demo.start}>
+              {t("demo.start")}
+            </button>
+            <p className="pdesc">{t("demo.start.hint")}</p>
+          </div>
+        )}
       </div>
     </>
   );
