@@ -22,6 +22,10 @@ const ZH: Dict = {
   "home.join": "加入房间 →",
   "home.host": "🖥 我是主持人 · 开一个新房间",
   "home.host.login": "📚 主持人登录 · 保存 / 导出 / 回看记录",
+  "home.demo": "🎬 先看一遍自动演示",
+
+  "demo.banner": "🎬 自动演示 · 当前：{{phase}} · 全部是虚拟数据",
+  "demo.cta": "退出演示，开一局真的 →",
 
   "play.connecting": "正在连接房间…",
   "play.missing.title": "房间不存在",
@@ -182,6 +186,10 @@ const EN: Dict = {
   "home.join": "Join room →",
   "home.host": "🖥 I'm the host · start a new room",
   "home.host.login": "📚 Host login · save / export / view history",
+  "home.demo": "🎬 Watch the auto-demo first",
+
+  "demo.banner": "🎬 Auto demo · now: {{phase}} · all data is fake",
+  "demo.cta": "Exit demo, start a real game →",
 
   "play.connecting": "Connecting to the room…",
   "play.missing.title": "Room not found",
