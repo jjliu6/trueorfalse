@@ -7,6 +7,7 @@ import { QR } from "@/components/tof/QR";
 import { useCountdown, useRoom } from "@/hooks/useRoom";
 import { useSound } from "@/hooks/useSound";
 import { noteStyle, wallCols, type Player } from "@/lib/tof";
+import { useLang } from "@/lib/i18n";
 import { BoardView } from "@/components/tof/BoardView";
 import { buildSnapshot } from "@/lib/records";
 import { useSession } from "@/hooks/useSession";
@@ -29,17 +30,18 @@ export const Route = createFileRoute("/screen/$code")({
 /** 投票时长，改这里同时改倒计时圈的进度基准 */
 const VOTE_SECONDS = 20;
 
-const PHASE_LABEL: Record<string, string> = {
-  lobby: "故事墙",
-  stage: "上台",
-  voting: "投票中",
-  reveal: "揭晓",
-  board: "榜单",
+const PHASE_LABEL_KEY: Record<string, string> = {
+  lobby: "screen.phase.lobby",
+  stage: "screen.phase.stage",
+  voting: "screen.phase.voting",
+  reveal: "screen.phase.reveal",
+  board: "screen.phase.board",
 };
 
 function ScreenPage() {
   const { code } = Route.useParams();
   const { k } = Route.useSearch();
+  const { t } = useLang();
   const upper = code.toUpperCase();
   const { room, players, votes, loading, missing } = useRoom(upper);
   const snd = useSound();
@@ -201,14 +203,14 @@ function ScreenPage() {
 
   const reset = useCallback(async () => {
     if (!room) return;
-    if (!window.confirm("重置本场：清空所有投票和分数，故事墙保留。确定？")) return;
+    if (!window.confirm(t("screen.reset.confirm"))) return;
     await supabase.from("votes").delete().eq("room_id", room.id);
     await supabase
       .from("players")
       .update({ score: 0, turn_done: false, correct_count: 0, fooled_pct: 0, revealed_truth: null })
       .eq("room_id", room.id);
     await setPhase({ phase: "lobby", current_player_id: null, voting_ends_at: null });
-  }, [room, setPhase]);
+  }, [room, setPhase, t]);
 
   /* ---------------- 控制条显示/快捷键 ---------------- */
   const [hudOn, setHudOn] = useState(false);
@@ -250,7 +252,9 @@ function ScreenPage() {
         <Backdrop />
         <div className="screen-root">
           <div className="scene" style={{ alignItems: "center", justifyContent: "center" }}>
-            <div className="ptitle">{missing ? `找不到房间 ${upper}` : "正在连接…"}</div>
+            <div className="ptitle">
+              {missing ? t("screen.missing", { code: upper }) : t("screen.connecting")}
+            </div>
           </div>
         </div>
       </>
@@ -258,28 +262,31 @@ function ScreenPage() {
   }
 
   /* ---------------- 主按钮文案 ---------------- */
-  let mainLabel = "🎲 随机点名";
-  let statusLine = `还剩 ${remaining.length} 人 · 或直接点一张贴纸`;
+  let mainLabel = t("screen.main.random");
+  let statusLine = t("screen.status.remain", { n: remaining.length });
   let disabled = false;
   if (phase === "lobby") {
     if (remaining.length === 0) {
-      mainLabel = "🏆 最终榜单";
-      statusLine = submitted.length ? "所有人都讲完了" : "等待大家填表";
+      mainLabel = t("screen.main.board");
+      statusLine = submitted.length ? t("screen.status.alldone") : t("screen.status.waiting");
       disabled = submitted.length === 0;
     }
   } else if (phase === "stage") {
-    mainLabel = `🗳 开启投票 ${VOTE_SECONDS}s`;
-    statusLine = `${current?.name ?? ""} 正在讲`;
+    mainLabel = t("screen.main.vote", { n: VOTE_SECONDS });
+    statusLine = t("screen.status.speaking", { name: current?.name ?? "" });
   } else if (phase === "voting") {
-    mainLabel = "✨ 揭晓答案";
-    statusLine = `还剩 ${left} 秒`;
+    mainLabel = t("screen.main.reveal");
+    statusLine = t("screen.status.left", { n: left });
   } else if (phase === "reveal") {
     const rest = submitted.filter((p) => !p.turn_done && p.id !== room.current_player_id);
-    mainLabel = rest.length > 0 ? "← 回故事墙选人" : "🏆 最终榜单";
-    statusLine = rest.length > 0 ? `还剩 ${rest.length} 人没讲` : "全部讲完了";
+    mainLabel = rest.length > 0 ? t("screen.main.back") : t("screen.main.board");
+    statusLine =
+      rest.length > 0
+        ? t("screen.status.remainNoTalk", { n: rest.length })
+        : t("screen.status.alldone2");
   } else {
-    mainLabel = "✔ 游戏结束";
-    statusLine = "念奖时间";
+    mainLabel = t("screen.main.over");
+    statusLine = t("screen.status.award");
     disabled = true;
   }
 
@@ -331,23 +338,21 @@ function ScreenPage() {
                 {mainLabel}
               </button>
               <div className="hud-now">
-                <span>{PHASE_LABEL[phase]}</span>
+                <span>{t(PHASE_LABEL_KEY[phase]!)}</span>
                 <b>{statusLine}</b>
               </div>
               <div className="hud-sec">
-                <button onClick={() => void back()}>← 上一步</button>
+                <button onClick={() => void back()}>{t("screen.hud.back")}</button>
                 <button onClick={() => void setPhase({ phase: "board", current_player_id: null })}>
-                  🏆 直接看榜单
+                  {t("screen.hud.board")}
                 </button>
                 <button onClick={() => snd.setMuted((m) => !m)}>
-                  {snd.muted ? "🔇 已静音" : "🔊 音效"}
+                  {snd.muted ? t("screen.hud.muted") : t("screen.hud.sound")}
                 </button>
-                <button onClick={() => void reset()}>↺ 重置</button>
+                <button onClick={() => void reset()}>{t("screen.hud.reset")}</button>
               </div>
             </div>
-            <div className={`keyhint${hudOn ? " hide" : ""}`}>
-              按 <b>空格</b> 进入下一步 · 移动鼠标唤出控制条
-            </div>
+            <div className={`keyhint${hudOn ? " hide" : ""}`}>{t("screen.keyhint")}</div>
           </>
         )}
       </div>
@@ -375,6 +380,7 @@ function LobbyScene({
   pickedId: string | null;
   onPick: (id: string) => void;
 }) {
+  const { t } = useLang();
   const empty = players.length === 0;
   const host = joinUrl.replace(/^https?:\/\//, "").split("/")[0] ?? "";
   return (
@@ -386,13 +392,13 @@ function LobbyScene({
             <span className="or">or</span>
             <span className="f">FALSE</span>
           </div>
-          <div className="counter">{players.length} 人已提交</div>
+          <div className="counter">{t("lobby.submitted", { n: players.length })}</div>
           <div className="spacer" />
           {!empty && (
             <div className="joinchip">
               <QR value={joinUrl} size={86} />
               <div>
-                <div className="code-label">扫码加入</div>
+                <div className="code-label">{t("lobby.scan")}</div>
                 <div className="room-code">{code}</div>
                 <div className="url-hint">{host}</div>
               </div>
@@ -402,21 +408,19 @@ function LobbyScene({
 
         {empty ? (
           <div className="empty-cta">
-            <div className="sub-cn">真 真 假 假</div>
+            <div className="sub-cn">{t("home.title.sub")}</div>
             <QR value={joinUrl} size={250} />
             <div style={{ textAlign: "center" }}>
               <div className="code-label" style={{ marginBottom: 6 }}>
-                扫码加入 · 或输入房间码
+                {t("lobby.scanOrCode")}
               </div>
               <div className="room-code">{code}</div>
               <div className="url-hint" style={{ marginTop: 8 }}>
                 {host}
               </div>
             </div>
-            <div className="tips">
-              写一个真故事、一个编的 —— 一句话就行
-              <br />
-              细节留着等下口头讲
+            <div className="tips" style={{ whiteSpace: "pre-line" }}>
+              {t("lobby.tips")}
             </div>
           </div>
         ) : (
@@ -440,7 +444,7 @@ function LobbyScene({
                 onClick={() => pickable && !p.turn_done && onPick(p.id)}
               >
                 <div className="tape" />
-                <div className="pickflag">🎯 就你了！</div>
+                <div className="pickflag">{t("lobby.pickflag")}</div>
                 <div className="donemark">✓</div>
                 <div className="nhead">
                   <div className="ava">{p.avatar}</div>
@@ -477,6 +481,7 @@ function SpotScene({
   votes: { voter_id: string; choice: string }[];
   left: number;
 }) {
+  const { t } = useLang();
   const revealed = phase === "reveal";
   const truth = player.revealed_truth;
   const total = votes.length;
@@ -502,10 +507,10 @@ function SpotScene({
             <div className="spot-name">{player.name}</div>
             <div className="spot-hint">
               {phase === "stage"
-                ? "请讲讲这两个故事 —— 只有一个是真的"
+                ? t("spot.hint.stage")
                 : phase === "voting"
-                  ? "大家正在投票，别看别人手机"
-                  : "答案揭晓"}
+                  ? t("spot.hint.voting")
+                  : t("spot.hint.reveal")}
             </div>
           </div>
         </div>
@@ -520,7 +525,7 @@ function SpotScene({
                 <div className="chead">
                   <div className="badge">{k}</div>
                   <div className="votecount">
-                    {n} 票 · {total ? Math.round((n / total) * 100) : 0}%
+                    {t("spot.votecount", { n, pct: total ? Math.round((n / total) * 100) : 0 })}
                   </div>
                 </div>
                 <div className="txt">{k === "A" ? player.story_a : player.story_b}</div>
@@ -551,23 +556,15 @@ function SpotScene({
                 </div>
               ))}
             </div>
-            <div className="votestat">
-              已投 <b>{total}</b> / {voters.length}
-            </div>
+            <div className="votestat">{t("spot.voted", { n: total, total: voters.length })}</div>
           </div>
         )}
 
         {revealed && (
           <div className="verdict">
-            {fooledPct > 50 ? (
-              <>
-                😈 {player.name} 骗过了 <em>{fooledPct}%</em> 的人 —— 骗术大师 +2 分
-              </>
-            ) : (
-              <>
-                🕵️ 只有 {fooledPct}% 的人被骗到，<em>{rightN}</em> 人识破 +1 分
-              </>
-            )}
+            {fooledPct > 50
+              ? t("spot.master", { name: player.name, pct: fooledPct })
+              : t("spot.detective", { pct: fooledPct, n: rightN })}
           </div>
         )}
       </div>

@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Backdrop } from "@/components/tof/Backdrop";
 import { useCountdown, useRoom } from "@/hooks/useRoom";
 import { AVATARS, playerKey, type Player, type Vote } from "@/lib/tof";
+import { useLang } from "@/lib/i18n";
 
 export const Route = createFileRoute("/play/$code")({
   head: () => ({
@@ -24,6 +25,7 @@ function Counter({ n }: { n: number }) {
 
 function PlayPage() {
   const { code } = Route.useParams();
+  const { t } = useLang();
   const upper = code.toUpperCase();
   const { room, players, votes, loading, missing, setVotes } = useRoom(upper);
 
@@ -83,7 +85,7 @@ function PlayPage() {
       .single();
     if (error || !data) {
       setBusy(false);
-      setErr("提交失败，再试一次");
+      setErr(t("play.err.submit"));
       return;
     }
     const player = data as Player;
@@ -94,7 +96,7 @@ function PlayPage() {
     if (secretErr) {
       await supabase.from("players").delete().eq("id", player.id);
       setBusy(false);
-      setErr("提交失败，再试一次");
+      setErr(t("play.err.submit"));
       return;
     }
     localStorage.setItem(playerKey(upper), player.id);
@@ -119,7 +121,7 @@ function PlayPage() {
       .single();
     if (error || !data) {
       setLocalChoice(null);
-      setVoteErr("没投上，再点一次");
+      setVoteErr(t("play.err.vote"));
       return;
     }
     // 不依赖实时推送，直接把自己的票写进本地状态
@@ -139,7 +141,7 @@ function PlayPage() {
         <Backdrop />
         <main className="phone-root">
           <div className="pstep">
-            <p className="pdesc">正在连接房间…</p>
+            <p className="pdesc">{t("play.connecting")}</p>
           </div>
         </main>
       </>
@@ -152,8 +154,8 @@ function PlayPage() {
         <Backdrop />
         <main className="phone-root">
           <div className="pstep">
-            <div className="ptitle">房间不存在</div>
-            <p className="pdesc">房间码 {upper} 没找到，看看大屏上的码再试一次。</p>
+            <div className="ptitle">{t("play.missing.title")}</div>
+            <p className="pdesc">{t("play.missing.desc", { code: upper })}</p>
           </div>
         </main>
       </>
@@ -171,21 +173,22 @@ function PlayPage() {
           {step === "nick" ? (
             <div className="pstep">
               <div className="ptitle">
-                加入 <span style={{ color: "var(--brand-2)" }}>{upper}</span>
+                {t("play.join.title", { code: "" })}
+                <span style={{ color: "var(--brand-2)" }}>{upper}</span>
               </div>
-              <p className="pdesc">给自己起个名字，等下大屏上大家都看得到。</p>
+              <p className="pdesc">{t("play.join.desc")}</p>
               <div className="field">
-                <label htmlFor="nick">昵称</label>
+                <label htmlFor="nick">{t("play.nick.label")}</label>
                 <input
                   id="nick"
                   value={name}
                   maxLength={12}
-                  placeholder="比如：小明 / Mia"
+                  placeholder={t("play.nick.placeholder")}
                   onChange={(e) => setName(e.target.value)}
                 />
               </div>
               <div className="field">
-                <label>选个头像</label>
+                <label>{t("play.avatar.label")}</label>
                 <div className="avapick">
                   {AVATARS.map((a) => (
                     <button
@@ -201,56 +204,57 @@ function PlayPage() {
               </div>
               <div style={{ flex: 1 }} />
               <button className="btn" disabled={!name.trim()} onClick={() => setStep("form")}>
-                进入 →
+                {t("play.enter")}
               </button>
             </div>
           ) : (
             <div className="pstep">
-              <div className="ptitle">写两个故事</div>
+              <div className="ptitle">{t("play.story.title")}</div>
               <p className="pdesc">
-                一个真的，一个编的。<b style={{ color: "var(--ink)" }}>最多 40 字</b> ——
-                写钩子就好，细节留着上台口头讲。
+                {t("play.story.desc.1")}{" "}
+                <b style={{ color: "var(--ink)" }}>{t("play.story.desc.2")}</b>{" "}
+                {t("play.story.desc.3")}
               </p>
               <div className="field">
                 <label htmlFor="sa">
-                  故事 A <Counter n={storyA.length} />
+                  {t("play.storyA.label")} <Counter n={storyA.length} />
                 </label>
                 <textarea
                   id="sa"
                   rows={3}
                   maxLength={40}
                   value={storyA}
-                  placeholder="我曾经在冰岛开车爆胎，被一群羊围观了两小时"
+                  placeholder={t("play.storyA.placeholder")}
                   onChange={(e) => setStoryA(e.target.value)}
                 />
               </div>
               <div className="field">
                 <label htmlFor="sb">
-                  故事 B <Counter n={storyB.length} />
+                  {t("play.storyB.label")} <Counter n={storyB.length} />
                 </label>
                 <textarea
                   id="sb"
                   rows={3}
                   maxLength={40}
                   value={storyB}
-                  placeholder="我给自己家的猫注册过一个营业执照"
+                  placeholder={t("play.storyB.placeholder")}
                   onChange={(e) => setStoryB(e.target.value)}
                 />
               </div>
               <div className="field">
-                <label>哪个是真的？（只有你自己知道）</label>
+                <label>{t("play.truth.label")}</label>
                 <div style={{ display: "flex", gap: 10 }}>
                   <button
                     className={`btn ghost${truth === "A" ? " sel" : ""}`}
                     onClick={() => setTruth("A")}
                   >
-                    A 是真的
+                    {t("play.truth.A")}
                   </button>
                   <button
                     className={`btn ghost${truth === "B" ? " sel" : ""}`}
                     onClick={() => setTruth("B")}
                   >
-                    B 是真的
+                    {t("play.truth.B")}
                   </button>
                 </div>
               </div>
@@ -264,7 +268,7 @@ function PlayPage() {
                 disabled={busy || !truth || !storyA.trim() || !storyB.trim()}
                 onClick={() => void submit()}
               >
-                提交 ✓
+                {t("play.submit")}
               </button>
             </div>
           )}
@@ -282,13 +286,13 @@ function PlayPage() {
   if (phase === "lobby") {
     body = (
       <div className="pstep">
-        <div className="ptitle">已提交</div>
-        <p className="pdesc">你的便利贴已经飞上大屏了。等大家都填完，主持人会开始。</p>
+        <div className="ptitle">{t("play.lobby.title")}</div>
+        <p className="pdesc">{t("play.lobby.desc")}</p>
         <div className="wait-ill">
           <div className="tick">✓</div>
         </div>
         <p className="pdesc" style={{ textAlign: "center" }}>
-          已提交 <b style={{ color: "var(--brand-2)" }}>{submittedCount}</b> 人 · 等下一位
+          {t("play.lobby.count", { n: submittedCount })}
         </p>
       </div>
     );
@@ -297,8 +301,12 @@ function PlayPage() {
       <div className="pstep">
         <div className="result-hero">
           <div className="big">{isMyTurn ? "🎤" : (current?.avatar ?? "👂")}</div>
-          <h3>{isMyTurn ? "该你上台了" : `${current?.name ?? "有人"} 正在讲`}</h3>
-          <p>{isMyTurn ? "把两个故事都讲一遍，别露馅" : "认真听 —— 等下要投票"}</p>
+          <h3>
+            {isMyTurn
+              ? t("play.stage.me.h")
+              : t("play.stage.other.h", { name: current?.name ?? t("play.stage.someone") })}
+          </h3>
+          <p>{isMyTurn ? t("play.stage.me.p") : t("play.stage.other.p")}</p>
         </div>
       </div>
     );
@@ -307,16 +315,14 @@ function PlayPage() {
       <div className="pstep">
         <div className="result-hero">
           <div className="big">🤫</div>
-          <h3>大家正在投票</h3>
-          <p>还剩 {left} 秒 · 保持面无表情</p>
+          <h3>{t("play.voting.me.h")}</h3>
+          <p>{t("play.voting.me.p", { n: left })}</p>
         </div>
       </div>
     ) : (
       <div className="pstep">
-        <div className="ptitle">
-          你觉得哪个是<span style={{ color: "var(--true)" }}>真</span>的？
-        </div>
-        <p className="pdesc">{current?.name} 的故事</p>
+        <div className="ptitle">{t("play.voting.title")}</div>
+        <p className="pdesc">{t("play.voting.storyOf", { name: current?.name ?? "" })}</p>
         <div className="vote-opts">
           {(["A", "B"] as const).map((k) => (
             <button
@@ -338,33 +344,32 @@ function PlayPage() {
         )}
         <div className="countdown">
           {left <= 0 ? (
-            "时间到，等大屏揭晓"
+            t("play.countdown.timeup")
           ) : (
             <>
-              {shownChoice ? "已锁定，可以改，但只剩 " : "还剩 "}
-              <b>{left}</b> 秒
+              {shownChoice ? t("play.countdown.locked") : t("play.countdown.left")}
+              <b>{left}</b>
+              {t("play.countdown.sec")}
             </>
           )}
         </div>
       </div>
     );
   } else if (phase === "reveal") {
-    const t = current?.revealed_truth;
+    const t2 = current?.revealed_truth;
     const targetVotes = votes.filter((v) => v.target_id === current?.id);
     const total = targetVotes.length;
     const fooled = total
-      ? Math.round(((total - targetVotes.filter((v) => v.choice === t).length) / total) * 100)
+      ? Math.round(((total - targetVotes.filter((v) => v.choice === t2).length) / total) * 100)
       : 0;
     if (isMyTurn) {
       body = (
         <div className="pstep">
           <div className="result-hero">
             <div className="big">{fooled > 50 ? "😈" : "🕵️"}</div>
-            <h3>{fooled > 50 ? "骗术大师！" : "被识破了"}</h3>
-            <p>
-              你骗过了 {fooled}% 的人（{total} 人投票）
-            </p>
-            <div className="chip">当前 {me.score ?? 0} 分</div>
+            <h3>{fooled > 50 ? t("play.reveal.master.h") : t("play.reveal.busted.h")}</h3>
+            <p>{t("play.reveal.fooled", { pct: fooled, n: total })}</p>
+            <div className="chip">{t("play.reveal.score", { n: me.score ?? 0 })}</div>
           </div>
         </div>
       );
@@ -373,23 +378,22 @@ function PlayPage() {
         <div className="pstep">
           <div className="result-hero">
             <div className="big">😶</div>
-            <h3>这轮你没投票</h3>
-            <p>真的是 {t ?? "?"} · 下轮记得手快点</p>
+            <h3>{t("play.reveal.novote.h")}</h3>
+            <p>{t("play.reveal.novote.p", { t: t2 ?? "?" })}</p>
           </div>
         </div>
       );
     } else {
-      const right = myVote.choice === t;
+      const right = myVote.choice === t2;
       body = (
         <div className="pstep">
           <div className="result-hero">
             <div className="big">{right ? "🎉" : "😵"}</div>
-            <h3>{right ? "猜对了！" : "被骗了"}</h3>
-            <p>
-              {t} 才是真的 · 有 {fooled}% 的人被骗
-            </p>
+            <h3>{right ? t("play.reveal.right.h") : t("play.reveal.wrong.h")}</h3>
+            <p>{t("play.reveal.truth", { t: t2 ?? "?", pct: fooled })}</p>
             <div className="chip">
-              {right ? "＋1 分 · " : ""}当前 {me.score ?? 0} 分
+              {right ? t("play.reveal.plus1") : ""}
+              {t("play.reveal.score", { n: me.score ?? 0 })}
             </div>
           </div>
         </div>
@@ -405,11 +409,15 @@ function PlayPage() {
       <div className="pstep">
         <div className="result-hero">
           <div className="big">{rank === 1 ? "🏆" : "🎊"}</div>
-          <h3>第 {rank} 名</h3>
+          <h3>{t("play.board.rank", { n: rank })}</h3>
           <p>
-            共 {me.score ?? 0} 分 · 猜对 {me.correct_count ?? 0} 次 · 骗到 {me.fooled_pct ?? 0}%
+            {t("play.board.summary", {
+              score: me.score ?? 0,
+              correct: me.correct_count ?? 0,
+              fooled: me.fooled_pct ?? 0,
+            })}
           </p>
-          <div className="chip">抬头看大屏，念奖了</div>
+          <div className="chip">{t("play.board.cta")}</div>
         </div>
       </div>
     );
@@ -423,7 +431,7 @@ function PlayPage() {
           <div className="ava">{me.avatar}</div>
           <div style={{ fontWeight: 800 }}>{me.name}</div>
           <div style={{ flex: 1 }} />
-          <div className="chip">{me.score ?? 0} 分</div>
+          <div className="chip">{t("play.score", { n: me.score ?? 0 })}</div>
         </div>
         {body}
       </main>

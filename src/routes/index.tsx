@@ -1,8 +1,9 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Backdrop } from "@/components/tof/Backdrop";
-import { fetchRoomByCode, makeCode, makeHostKey } from "@/lib/tof";
+import { fetchRoomByCode, fetchSiteStats, makeCode, makeHostKey, type SiteStats } from "@/lib/tof";
+import { useLang } from "@/lib/i18n";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -25,9 +26,32 @@ export const Route = createFileRoute("/")({
 
 function Index() {
   const navigate = useNavigate();
+  const { t } = useLang();
   const [code, setCode] = useState("");
   const [err, setErr] = useState("");
   const [busy, setBusy] = useState(false);
+  const [stats, setStats] = useState<SiteStats | null>(null);
+
+  useEffect(() => {
+    let alive = true;
+    void fetchSiteStats().then((s) => alive && setStats(s));
+
+    // 有新房间 / 新玩家时把计数 +1，不用整页刷新
+    const channel = supabase
+      .channel("home-stats")
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "rooms" }, () =>
+        setStats((s) => (s ? { ...s, rooms: s.rooms + 1 } : s)),
+      )
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "players" }, () =>
+        setStats((s) => (s ? { ...s, players: s.players + 1 } : s)),
+      )
+      .subscribe();
+
+    return () => {
+      alive = false;
+      void supabase.removeChannel(channel);
+    };
+  }, []);
 
   const join = async () => {
     const c = code.trim().toUpperCase();
@@ -37,7 +61,7 @@ function Index() {
     const room = await fetchRoomByCode(c);
     setBusy(false);
     if (!room) {
-      setErr("找不到这个房间码，再看看大屏？");
+      setErr(t("home.err.notfound"));
       return;
     }
     void navigate({ to: "/play/$code", params: { code: c } });
@@ -64,7 +88,7 @@ function Index() {
       if (error?.code !== "23505") break;
     }
     setBusy(false);
-    setErr("房间创建失败，再试一次");
+    setErr(t("home.err.create"));
   };
 
   return (
@@ -80,21 +104,33 @@ function Index() {
                 <span className="f">FALSE</span>
               </h1>
               <div className="sub-cn" style={{ fontSize: 13 }}>
-                真 真 假 假
+                {t("home.title.sub")}
               </div>
+              {stats && (
+                <div
+                  style={{
+                    display: "flex",
+                    gap: 18,
+                    marginTop: 14,
+                    fontSize: 12.5,
+                    color: "var(--muted, rgba(255,255,255,.6))",
+                  }}
+                >
+                  <span>{t("home.stats.rooms", { n: stats.rooms })}</span>
+                  <span>{t("home.stats.players", { n: stats.players })}</span>
+                </div>
+              )}
             </div>
-            <p className="pdesc">
-              每人写一个真故事、一个编的，其他人猜哪个是真的。
-              <br />
-              输入大屏上的房间码就能加入。
+            <p className="pdesc" style={{ whiteSpace: "pre-line" }}>
+              {t("home.desc")}
             </p>
             <div className="field">
-              <label htmlFor="code">房间码</label>
+              <label htmlFor="code">{t("home.code.label")}</label>
               <input
                 id="code"
                 value={code}
                 autoCapitalize="characters"
-                placeholder="例如 TFABCD"
+                placeholder={t("home.code.placeholder")}
                 onChange={(e) => setCode(e.target.value.toUpperCase())}
                 onKeyDown={(e) => e.key === "Enter" && void join()}
                 style={{ letterSpacing: ".18em", fontWeight: 800, fontSize: 20 }}
@@ -106,15 +142,15 @@ function Index() {
               </p>
             )}
             <button className="btn" disabled={busy || !code.trim()} onClick={() => void join()}>
-              加入房间 →
+              {t("home.join")}
             </button>
           </div>
           <div className="home-footer">
             <button className="btn ghost" disabled={busy} onClick={() => void createRoom()}>
-              🖥 我是主持人 · 开一个新房间
+              {t("home.host")}
             </button>
             <a className="minibtn" href="/history" style={{ justifyContent: "center" }}>
-              📚 主持人登录 · 保存 / 导出 / 回看记录
+              {t("home.host.login")}
             </a>
           </div>
         </div>
