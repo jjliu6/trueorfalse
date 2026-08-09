@@ -490,9 +490,12 @@ body.tof-lock {
 .keyhint b { color: rgba(255,255,255,.5); }
 .keyhint.hide { opacity: 0; }
 
+.screen-footer { position: fixed; left: 24px; bottom: 20px; z-index: 68; font-size: 12px; color: rgba(255,255,255,.28);
+  text-decoration: none; transition: color .3s; pointer-events: auto; }
+.screen-footer:hover { color: rgba(255,255,255,.55); text-decoration: underline; }
+
 @media (max-width: 860px) {
-  .cards { grid-template-columns: 1fr; gap: 14px; }
-  .story { height: auto; min-height: 150px; }
+  .screen-footer { left: 16px; bottom: 16px; font-size: 11px; }
 }
 
 /* ===== 记录 / 导出 / 历史 ===== */
