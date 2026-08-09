@@ -7,6 +7,9 @@ import { QR } from "@/components/tof/QR";
 import { useCountdown, useRoom } from "@/hooks/useRoom";
 import { useSound } from "@/hooks/useSound";
 import { noteStyle, wallCols, type Player } from "@/lib/tof";
+import { BoardView } from "@/components/tof/BoardView";
+import { buildSnapshot } from "@/lib/records";
+import { useSession } from "@/hooks/useSession";
 
 export const Route = createFileRoute("/screen/$code")({
   validateSearch: (search: Record<string, unknown>) => ({
@@ -306,7 +309,7 @@ function ScreenPage() {
             left={left}
           />
         )}
-        {phase === "board" && <BoardScene players={submitted} />}
+        {phase === "board" && <BoardScene code={upper} players={submitted} />}
 
         {isHost && (
           <>
@@ -564,67 +567,76 @@ function SpotScene({
 }
 
 /* ================= 榜单 ================= */
-const MEDALS = ["🥇", "🥈", "🥉"];
+function BoardScene({ code, players }: { code: string; players: Player[] }) {
+  const boardRef = useRef<HTMLDivElement>(null);
+  const { session, ready } = useSession();
+  const [busy, setBusy] = useState<"save" | "png" | null>(null);
+  const [tip, setTip] = useState("");
+  const snapshot = useMemo(() => buildSnapshot(code, players), [code, players]);
 
-function BoardScene({ players }: { players: Player[] }) {
-  const ranked = [...players].sort((a, b) => (b.score ?? 0) - (a.score ?? 0));
-  const max = Math.max(1, ...ranked.map((p) => p.score ?? 0));
-  const liar = [...players]
-    .filter((p) => p.turn_done)
-    .sort((a, b) => (b.fooled_pct ?? 0) - (a.fooled_pct ?? 0))[0];
-  const detective = [...players].sort((a, b) => (b.correct_count ?? 0) - (a.correct_count ?? 0))[0];
+  const gateHref = `/auth?redirect=${encodeURIComponent(`/screen/${code}`)}`;
+
+  const save = async () => {
+    if (!session) return;
+    setBusy("save");
+    setTip("");
+    const { error } = await supabase.from("game_records").insert({
+      user_id: session.user.id,
+      room_code: code,
+      title: `${code} · ${players.length} 人`,
+      snapshot: snapshot as unknown as never,
+    });
+    setBusy(null);
+    setTip(error ? `保存失败：${error.message}` : "已保存，可在「历史记录」里回看 ✓");
+  };
+
+  const exportPng = async () => {
+    if (!session || !boardRef.current) return;
+    setBusy("png");
+    setTip("");
+    try {
+      const { toPng } = await import("html-to-image");
+      const url = await toPng(boardRef.current, {
+        pixelRatio: 2,
+        backgroundColor: "#0a0b14",
+        cacheBust: true,
+      });
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `真真假假-${code}-战报.png`;
+      a.click();
+      setTip("战报图已导出 ✓");
+    } catch {
+      setTip("导出失败，再试一次");
+    }
+    setBusy(null);
+  };
 
   return (
     <div className="scene">
-      <div className="board">
-        <div className="board-head">
-          <div>
-            <div className="wordmark" style={{ fontSize: "clamp(22px,2.8vw,40px)" }}>
-              🏆 最终榜单
-            </div>
-            <div className="sub-cn" style={{ fontSize: 11, letterSpacing: ".28em", marginTop: 4 }}>
-              猜对 +1 · 骗过半数 +2
-            </div>
-          </div>
-          <div className="awards">
-            <div className="award">
-              <div className="icon">😈</div>
-              <div>
-                <div className="lab">最佳骗子</div>
-                <div className="who">{liar ? `${liar.avatar} ${liar.name}` : "—"}</div>
-                <div className="meta">骗过了 {liar?.fooled_pct ?? 0}% 的人</div>
-              </div>
-            </div>
-            <div className="award">
-              <div className="icon">🕵️</div>
-              <div>
-                <div className="lab">最佳侦探</div>
-                <div className="who">
-                  {detective ? `${detective.avatar} ${detective.name}` : "—"}
-                </div>
-                <div className="meta">猜对 {detective?.correct_count ?? 0} 次</div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className="rows">
-          {ranked.map((p, i) => (
-            <div
-              key={p.id}
-              className={`row${i === 0 ? " top1" : ""}`}
-              style={{ "--i": i } as React.CSSProperties}
-            >
-              <div className="rank">{i + 1}</div>
-              <div className="medal">{MEDALS[i] ?? ""}</div>
-              <div className="ava">{p.avatar}</div>
-              <div className="rname">{p.name}</div>
-              <div className="barwrap">
-                <i style={{ width: `${((p.score ?? 0) / max) * 100}%` }} />
-              </div>
-              <div className="score">{p.score ?? 0}</div>
-            </div>
-          ))}
-        </div>
+      <BoardView ref={boardRef} players={snapshot.players} />
+      <div className="board-actions">
+        {!ready ? null : session ? (
+          <>
+            <button className="minibtn" disabled={busy !== null} onClick={() => void save()}>
+              {busy === "save" ? "保存中…" : "💾 保存记录"}
+            </button>
+            <button className="minibtn" disabled={busy !== null} onClick={() => void exportPng()}>
+              {busy === "png" ? "导出中…" : "🖼 导出战报图"}
+            </button>
+            <a className="minibtn" href="/history">
+              📚 历史记录
+            </a>
+          </>
+        ) : (
+          <>
+            <span className="board-gate">保存记录 / 导出战报 需要主持人登录</span>
+            <a className="minibtn" href={gateHref}>
+              🔐 注册 / 登录
+            </a>
+          </>
+        )}
+        {tip && <span className="board-gate">{tip}</span>}
       </div>
     </div>
   );
