@@ -36,15 +36,13 @@ function Index() {
     let alive = true;
     void fetchSiteStats().then((s) => alive && setStats(s));
 
-    // 有新房间 / 新玩家时把计数 +1，不用整页刷新
+    // 有新玩家提交时重新拉一次统计——"局数"取决于哪些房间有人提交过，
+    // 不是简单 +1 能算对的，所以直接重新查一次，量级很小，不用担心开销
     const channel = supabase
       .channel("home-stats")
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "rooms" }, () =>
-        setStats((s) => (s ? { ...s, rooms: s.rooms + 1 } : s)),
-      )
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "players" }, () =>
-        setStats((s) => (s ? { ...s, players: s.players + 1 } : s)),
-      )
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "players" }, () => {
+        void fetchSiteStats().then((s) => alive && setStats(s));
+      })
       .subscribe();
 
     return () => {

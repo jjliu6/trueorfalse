@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Backdrop } from "@/components/tof/Backdrop";
 import { useSession } from "@/hooks/useSession";
+import { useLang } from "@/lib/i18n";
 
 export const Route = createFileRoute("/auth")({
   validateSearch: (search: Record<string, unknown>) => ({
@@ -11,7 +12,10 @@ export const Route = createFileRoute("/auth")({
   head: () => ({
     meta: [
       { title: "主持人登录 · TRUE or FALSE 真真假假" },
-      { name: "description", content: "主持人注册登录后即可保存对局记录、导出战报图并回看历史榜单。" },
+      {
+        name: "description",
+        content: "主持人注册登录后即可保存对局记录、导出战报图并回看历史榜单。",
+      },
       { property: "og:title", content: "主持人登录 · TRUE or FALSE" },
       { property: "og:description", content: "登录后保存对局记录、导出战报图、回看历史榜单。" },
     ],
@@ -26,6 +30,7 @@ function safePath(raw: string | undefined) {
 
 function AuthPage() {
   const navigate = useNavigate();
+  const { t } = useLang();
   const { redirect } = Route.useSearch();
   const { session, ready } = useSession();
   const [mode, setMode] = useState<"in" | "up">("in");
@@ -36,7 +41,13 @@ function AuthPage() {
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    if (ready && session) void navigate({ to: safePath(redirect), replace: true });
+    if (!ready || !session) return;
+    const dest = safePath(redirect);
+    // redirect 可能带着 ?k=... 这样的查询串（比如从大屏榜单页跳过来的），
+    // 用 TanStack 的 navigate({to}) 传一个带 query 的原始字符串不保证能正确解析，
+    // 直接用真实跳转最保险
+    if (dest.includes("?")) window.location.assign(dest);
+    else void navigate({ to: dest, replace: true });
   }, [ready, session, redirect, navigate]);
 
   const submit = async () => {
@@ -47,11 +58,15 @@ function AuthPage() {
       const { data, error } = await supabase.auth.signUp({
         email: email.trim(),
         password: pw,
-        options: { emailRedirectTo: window.location.origin },
+        options: {
+          // 不能只跳回首页——那样确认完邮箱又得重新找回刚才那场游戏。
+          // 带上 redirect，确认链接点开后 useSession 认出登录态，会自动把人送回原来的页面
+          emailRedirectTo: `${window.location.origin}/auth?redirect=${encodeURIComponent(safePath(redirect))}`,
+        },
       });
       setBusy(false);
       if (error) return setErr(error.message);
-      if (!data.session) return setMsg("注册邮件已发出，点开邮箱里的确认链接就能登录。");
+      if (!data.session) return setMsg(t("auth.msg.signupSent"));
       return;
     }
     const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password: pw });
@@ -66,16 +81,18 @@ function AuthPage() {
         <div className="pstep">
           <div>
             <h1 className="wordmark" style={{ fontSize: 32 }}>
-              <span className="t">主持人</span>
+              <span className="t">{t("auth.title.host")}</span>
               <span className="or">·</span>
-              <span className="f">登录</span>
+              <span className="f">{t("auth.title.login")}</span>
             </h1>
             <div className="sub-cn" style={{ fontSize: 12 }}>
-              保存记录 · 导出战报 · 回看历史
+              {t("auth.sub")}
             </div>
           </div>
           <p className="pdesc">
-            玩游戏不需要登录。只有<b>保存对局记录、导出战报图、回看历史榜单</b>需要一个账号。
+            {t("auth.desc.pre")}
+            <b style={{ color: "var(--ink)" }}>{t("auth.desc.bold")}</b>
+            {t("auth.desc.post")}
           </p>
 
           <div style={{ display: "flex", gap: 8 }}>
@@ -83,18 +100,18 @@ function AuthPage() {
               className={`btn ghost${mode === "in" ? " sel" : ""}`}
               onClick={() => setMode("in")}
             >
-              登录
+              {t("auth.mode.in")}
             </button>
             <button
               className={`btn ghost${mode === "up" ? " sel" : ""}`}
               onClick={() => setMode("up")}
             >
-              注册
+              {t("auth.mode.up")}
             </button>
           </div>
 
           <div className="field">
-            <label htmlFor="email">邮箱</label>
+            <label htmlFor="email">{t("auth.email.label")}</label>
             <input
               id="email"
               type="email"
@@ -105,7 +122,7 @@ function AuthPage() {
             />
           </div>
           <div className="field">
-            <label htmlFor="pw">密码</label>
+            <label htmlFor="pw">{t("auth.pw.label")}</label>
             <input
               id="pw"
               type="password"
@@ -113,7 +130,7 @@ function AuthPage() {
               value={pw}
               onChange={(e) => setPw(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && void submit()}
-              placeholder="至少 6 位"
+              placeholder={t("auth.pw.placeholder")}
             />
           </div>
 
@@ -133,12 +150,12 @@ function AuthPage() {
             disabled={busy || !email.trim() || pw.length < 6}
             onClick={() => void submit()}
           >
-            {mode === "up" ? "注册并登录 →" : "登录 →"}
+            {mode === "up" ? t("auth.submit.up") : t("auth.submit.in")}
           </button>
 
           <div style={{ flex: 1 }} />
           <Link to="/" className="btn ghost" style={{ textAlign: "center", lineHeight: "1.2" }}>
-            ← 回首页
+            {t("auth.back")}
           </Link>
         </div>
       </main>

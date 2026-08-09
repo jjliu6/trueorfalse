@@ -93,12 +93,16 @@ export type SiteStats = {
 
 /** 首页的全站计数：一共开过多少局、一共有多少人玩过 */
 export async function fetchSiteStats(): Promise<SiteStats> {
-  const [roomsRes, playersRes] = await Promise.all([
-    supabase.from("rooms").select("id", { count: "exact", head: true }),
+  const [playersRes, submittedRes] = await Promise.all([
     supabase.from("players").select("id", { count: "exact", head: true }),
+    // 早期开发/测试点过很多"创建房间"但没人提交故事的空房间，
+    // 直接数 rooms 行数会出现"局数比人数还多"的怪现象——
+    // 所以"局数"只算真正有人提交过故事的房间，而不是 rooms 表的行数
+    supabase.from("players").select("room_id").eq("submitted", true),
   ]);
+  const rooms = new Set((submittedRes.data ?? []).map((p) => p.room_id)).size;
   return {
-    rooms: roomsRes.count ?? 0,
+    rooms,
     players: playersRes.count ?? 0,
   };
 }

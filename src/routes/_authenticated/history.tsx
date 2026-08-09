@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Backdrop } from "@/components/tof/Backdrop";
 import { BoardView } from "@/components/tof/BoardView";
 import { isSnapshot, type GameSnapshot } from "@/lib/records";
+import { useLang } from "@/lib/i18n";
 
 export const Route = createFileRoute("/_authenticated/history")({
   head: () => ({
@@ -27,6 +28,7 @@ type Row = {
 
 function HistoryPage() {
   const navigate = useNavigate();
+  const { t, lang } = useLang();
   const [rows, setRows] = useState<Row[] | null>(null);
   const [openId, setOpenId] = useState<string | null>(null);
 
@@ -63,45 +65,51 @@ function HistoryPage() {
         <header className="hist-top">
           <div>
             <h1 className="wordmark" style={{ fontSize: 26 }}>
-              <span className="t">历史</span>
+              <span className="t">{t("history.title.a")}</span>
               <span className="or">·</span>
-              <span className="f">记录</span>
+              <span className="f">{t("history.title.b")}</span>
             </h1>
             <div className="sub-cn" style={{ fontSize: 11 }}>
-              保存过的对局都在这里
+              {t("history.sub")}
             </div>
           </div>
           <div style={{ display: "flex", gap: 8 }}>
             <Link to="/" className="minibtn">
-              首页
+              {t("history.home")}
             </Link>
             <button className="minibtn" onClick={() => void signOut()}>
-              退出登录
+              {t("history.signout")}
             </button>
           </div>
         </header>
 
-        {rows === null && <p className="pdesc">加载中…</p>}
-        {rows?.length === 0 && (
-          <p className="pdesc">还没有记录。在大屏榜单页点「保存记录」，这一场就会出现在这里。</p>
-        )}
+        {rows === null && <p className="pdesc">{t("history.loading")}</p>}
+        {rows?.length === 0 && <p className="pdesc">{t("history.empty")}</p>}
 
         <div className="hist-list">
           {rows?.map((r) => (
             <div key={r.id} className="hist-item">
               <div>
-                <div className="hist-title">{r.title || `房间 ${r.room_code}`}</div>
+                <div className="hist-title">
+                  {r.title || t("history.item.title", { code: r.room_code })}
+                </div>
                 <div className="hist-meta">
-                  {new Date(r.played_at).toLocaleString("zh-CN")} · {r.room_code} ·{" "}
-                  {isSnapshot(r.snapshot) ? r.snapshot.players.length : 0} 人
+                  {new Date(r.played_at).toLocaleString(lang === "zh" ? "zh-CN" : "en-US")} ·{" "}
+                  {r.room_code} ·{" "}
+                  {t("history.item.meta", {
+                    n: isSnapshot(r.snapshot) ? r.snapshot.players.length : 0,
+                  })}
                 </div>
               </div>
               <div style={{ display: "flex", gap: 8 }}>
-                <button className="minibtn" onClick={() => setOpenId(openId === r.id ? null : r.id)}>
-                  {openId === r.id ? "收起" : "回看"}
+                <button
+                  className="minibtn"
+                  onClick={() => setOpenId(openId === r.id ? null : r.id)}
+                >
+                  {openId === r.id ? t("history.collapse") : t("history.view")}
                 </button>
                 <button className="minibtn danger" onClick={() => void remove(r.id)}>
-                  删除
+                  {t("history.delete")}
                 </button>
               </div>
             </div>
@@ -112,7 +120,7 @@ function HistoryPage() {
           <div className="hist-view">
             <BoardView
               players={snap.players}
-              caption={`${open?.room_code ?? ""} · ${new Date(open!.played_at).toLocaleString("zh-CN")}`}
+              caption={`${open?.room_code ?? ""} · ${new Date(open!.played_at).toLocaleString(lang === "zh" ? "zh-CN" : "en-US")}`}
             />
             <div className="hist-stories">
               {snap.players.map((p) => (
