@@ -316,7 +316,7 @@ function ScreenPage() {
             left={left}
           />
         )}
-        {phase === "board" && <BoardScene code={upper} players={submitted} />}
+        {phase === "board" && <BoardScene code={upper} players={submitted} hostKey={k} />}
 
         <a
           className="screen-footer"
@@ -573,14 +573,25 @@ function SpotScene({
 }
 
 /* ================= 榜单 ================= */
-function BoardScene({ code, players }: { code: string; players: Player[] }) {
+function BoardScene({
+  code,
+  players,
+  hostKey,
+}: {
+  code: string;
+  players: Player[];
+  hostKey: string | undefined;
+}) {
+  const { t } = useLang();
   const boardRef = useRef<HTMLDivElement>(null);
   const { session, ready } = useSession();
   const [busy, setBusy] = useState<"save" | "png" | null>(null);
   const [tip, setTip] = useState("");
   const snapshot = useMemo(() => buildSnapshot(code, players), [code, players]);
 
-  const gateHref = `/auth?redirect=${encodeURIComponent(`/screen/${code}`)}`;
+  // 带上 k，登录/注册确认后跳回来还是主持人身份，不用重新找回房间链接
+  const backTo = `/screen/${code}${hostKey ? `?k=${encodeURIComponent(hostKey)}` : ""}`;
+  const gateHref = `/auth?redirect=${encodeURIComponent(backTo)}`;
 
   const save = async () => {
     if (!session) return;
@@ -593,7 +604,7 @@ function BoardScene({ code, players }: { code: string; players: Player[] }) {
       snapshot: snapshot as unknown as never,
     });
     setBusy(null);
-    setTip(error ? `保存失败：${error.message}` : "已保存，可在「历史记录」里回看 ✓");
+    setTip(error ? t("board.save.err", { msg: error.message }) : t("board.save.ok"));
   };
 
   const exportPng = async () => {
@@ -611,9 +622,9 @@ function BoardScene({ code, players }: { code: string; players: Player[] }) {
       a.href = url;
       a.download = `真真假假-${code}-战报.png`;
       a.click();
-      setTip("战报图已导出 ✓");
+      setTip(t("board.export.ok"));
     } catch {
-      setTip("导出失败，再试一次");
+      setTip(t("board.export.err"));
     }
     setBusy(null);
   };
@@ -625,20 +636,20 @@ function BoardScene({ code, players }: { code: string; players: Player[] }) {
         {!ready ? null : session ? (
           <>
             <button className="minibtn" disabled={busy !== null} onClick={() => void save()}>
-              {busy === "save" ? "保存中…" : "💾 保存记录"}
+              {busy === "save" ? t("board.save.busy") : t("board.save")}
             </button>
             <button className="minibtn" disabled={busy !== null} onClick={() => void exportPng()}>
-              {busy === "png" ? "导出中…" : "🖼 导出战报图"}
+              {busy === "png" ? t("board.export.busy") : t("board.export")}
             </button>
             <a className="minibtn" href="/history">
-              📚 历史记录
+              {t("board.history")}
             </a>
           </>
         ) : (
           <>
-            <span className="board-gate">保存记录 / 导出战报 需要主持人登录</span>
+            <span className="board-gate">{t("board.gate")}</span>
             <a className="minibtn" href={gateHref}>
-              🔐 注册 / 登录
+              {t("board.login")}
             </a>
           </>
         )}
