@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Backdrop } from "@/components/tof/Backdrop";
 import { ConfettiCanvas } from "@/components/tof/Confetti";
 import { BoardView } from "@/components/tof/BoardView";
@@ -48,7 +48,11 @@ function DemoPage() {
     [demo.players],
   );
 
-  const joinUrl = typeof window === "undefined" ? "" : `${window.location.origin}/play/DEMO`;
+  // 客户端才知道 origin，SSR 时留空，避免首屏文本不一致导致的 hydration 报错
+  const [joinUrl, setJoinUrl] = useState("");
+  useEffect(() => {
+    setJoinUrl(`${window.location.origin}/play/DEMO`);
+  }, []);
 
   return (
     <>
