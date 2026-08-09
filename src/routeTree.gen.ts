@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as DemoRouteImport } from './routes/demo'
 import { Route as AuthenticatedHistoryRouteImport } from './routes/_authenticated/history'
 import { Route as PlayCodeRouteImport } from './routes/play.$code'
 import { Route as ScreenCodeRouteImport } from './routes/screen.$code'
@@ -28,6 +29,11 @@ const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DemoRoute = DemoRouteImport.update({
+  id: '/demo',
+  path: '/demo',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedHistoryRoute = AuthenticatedHistoryRouteImport.update({
@@ -49,6 +55,7 @@ const ScreenCodeRoute = ScreenCodeRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/demo': typeof DemoRoute
   '/history': typeof AuthenticatedHistoryRoute
   '/play/$code': typeof PlayCodeRoute
   '/screen/$code': typeof ScreenCodeRoute
@@ -56,6 +63,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/demo': typeof DemoRoute
   '/history': typeof AuthenticatedHistoryRoute
   '/play/$code': typeof PlayCodeRoute
   '/screen/$code': typeof ScreenCodeRoute
@@ -65,20 +73,23 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/demo': typeof DemoRoute
   '/_authenticated/history': typeof AuthenticatedHistoryRoute
   '/play/$code': typeof PlayCodeRoute
   '/screen/$code': typeof ScreenCodeRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/history' | '/play/$code' | '/screen/$code'
+  fullPaths:
+    '/' | '/auth' | '/demo' | '/history' | '/play/$code' | '/screen/$code'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/history' | '/play/$code' | '/screen/$code'
+  to: '/' | '/auth' | '/demo' | '/history' | '/play/$code' | '/screen/$code'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/auth'
+    | '/demo'
     | '/_authenticated/history'
     | '/play/$code'
     | '/screen/$code'
@@ -88,6 +99,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  DemoRoute: typeof DemoRoute
   PlayCodeRoute: typeof PlayCodeRoute
   ScreenCodeRoute: typeof ScreenCodeRoute
 }
@@ -113,6 +125,13 @@ declare module '@tanstack/react-router' {
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/demo': {
+      id: '/demo'
+      path: '/demo'
+      fullPath: '/demo'
+      preLoaderRoute: typeof DemoRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/history': {
@@ -154,6 +173,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  DemoRoute: DemoRoute,
   PlayCodeRoute: PlayCodeRoute,
   ScreenCodeRoute: ScreenCodeRoute,
 }

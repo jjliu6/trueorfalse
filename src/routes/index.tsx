@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Backdrop } from "@/components/tof/Backdrop";
@@ -142,6 +142,9 @@ function Index() {
             <button className="btn" disabled={busy || !code.trim()} onClick={() => void join()}>
               {t("home.join")}
             </button>
+            <Link className="minibtn" to="/demo" style={{ justifyContent: "center" }}>
+              {t("home.demo")}
+            </Link>
           </div>
           <div className="home-footer">
             <button className="btn ghost" disabled={busy} onClick={() => void createRoom()}>
