@@ -71,34 +71,23 @@ function PlayPage() {
     if (!room || !truth || !storyA.trim() || !storyB.trim()) return;
     setBusy(true);
     setErr("");
-    const { data, error } = await supabase
-      .from("players")
-      .insert({
-        room_id: room.id,
-        name: name.trim(),
-        avatar,
-        story_a: storyA.trim(),
-        story_b: storyB.trim(),
-        submitted: true,
-      })
-      .select()
-      .single();
+    // 建玩家、写 truth 在数据库那一侧一次性原子完成——
+    // 不这样的话，两次 insert 中间的网络往返就是个竞态窗口，
+    // 别人能抢在真正的提交者之前给这个玩家插一条编的 truth
+    const { data, error } = await supabase.rpc("submit_player", {
+      p_room_id: room.id,
+      p_name: name.trim(),
+      p_avatar: avatar,
+      p_story_a: storyA.trim(),
+      p_story_b: storyB.trim(),
+      p_truth: truth,
+    });
     if (error || !data) {
       setBusy(false);
       setErr(t("play.err.submit"));
       return;
     }
     const player = data as Player;
-    // 没有 secret 就没法揭晓/结算，这一轮会永远卡在"还没讲完"——所以写不进去就把人也撤回
-    const { error: secretErr } = await supabase
-      .from("player_secrets")
-      .insert({ player_id: player.id, truth });
-    if (secretErr) {
-      await supabase.from("players").delete().eq("id", player.id);
-      setBusy(false);
-      setErr(t("play.err.submit"));
-      return;
-    }
     localStorage.setItem(playerKey(upper), player.id);
     setMyId(player.id);
     setBusy(false);

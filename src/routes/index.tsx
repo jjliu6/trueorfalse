@@ -72,23 +72,14 @@ function Index() {
     // code 是 unique 的，撞了就换一个再试，别让用户看见"创建失败"
     for (let attempt = 0; attempt < 5; attempt++) {
       const newCode = makeCode();
-      const { data, error } = await supabase
-        .from("rooms")
-        .insert({ code: newCode })
-        .select()
-        .single();
+      // 建房间、写 host_key 在数据库那一侧一次性原子完成——
+      // 不这样的话，两次 insert 中间的网络往返就是个竞态窗口，
+      // 谁抢着先给这个房间插一条 host_key 就算谁的
+      const { data, error } = await supabase.rpc("create_room_with_host", {
+        p_code: newCode,
+        p_key: hostKey,
+      });
       if (data && !error) {
-        // host_key 单独存进只能 insert、不能 select 的 room_hosts 表——
-        // 写不进去这个房间就没法登录，主持人也没了控制权，所以失败就把房间也撤回
-        const { error: hostErr } = await supabase
-          .from("room_hosts")
-          .insert({ room_id: data.id, host_key: hostKey });
-        if (hostErr) {
-          await supabase.from("rooms").delete().eq("id", data.id);
-          setBusy(false);
-          setErr(t("home.err.create"));
-          return;
-        }
         setBusy(false);
         void navigate({ to: "/screen/$code", params: { code: newCode }, search: { k: hostKey } });
         return;
