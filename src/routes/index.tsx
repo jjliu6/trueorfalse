@@ -1,8 +1,8 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Backdrop } from "@/components/tof/Backdrop";
-import { fetchRoomByCode, makeCode, makeHostKey } from "@/lib/tof";
+import { fetchRoomByCode, fetchSiteStats, makeCode, makeHostKey, type SiteStats } from "@/lib/tof";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -28,6 +28,28 @@ function Index() {
   const [code, setCode] = useState("");
   const [err, setErr] = useState("");
   const [busy, setBusy] = useState(false);
+  const [stats, setStats] = useState<SiteStats | null>(null);
+
+  useEffect(() => {
+    let alive = true;
+    void fetchSiteStats().then((s) => alive && setStats(s));
+
+    // 有新房间 / 新玩家时把计数 +1，不用整页刷新
+    const channel = supabase
+      .channel("home-stats")
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "rooms" }, () =>
+        setStats((s) => (s ? { ...s, rooms: s.rooms + 1 } : s)),
+      )
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "players" }, () =>
+        setStats((s) => (s ? { ...s, players: s.players + 1 } : s)),
+      )
+      .subscribe();
+
+    return () => {
+      alive = false;
+      void supabase.removeChannel(channel);
+    };
+  }, []);
 
   const join = async () => {
     const c = code.trim().toUpperCase();
@@ -81,6 +103,24 @@ function Index() {
             <div className="sub-cn" style={{ fontSize: 13 }}>
               真 真 假 假
             </div>
+            {stats && (
+              <div
+                style={{
+                  display: "flex",
+                  gap: 18,
+                  marginTop: 14,
+                  fontSize: 12.5,
+                  color: "var(--muted, rgba(255,255,255,.6))",
+                }}
+              >
+                <span>
+                  🎲 已开局 <b style={{ color: "var(--fg, #fff)" }}>{stats.rooms}</b> 场
+                </span>
+                <span>
+                  🙋 已有 <b style={{ color: "var(--fg, #fff)" }}>{stats.players}</b> 人玩过
+                </span>
+              </div>
+            )}
           </div>
           <p className="pdesc">
             每人写一个真故事、一个编的，其他人猜哪个是真的。

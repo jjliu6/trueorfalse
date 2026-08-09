@@ -85,3 +85,20 @@ export async function fetchRoomByCode(code: string) {
     .maybeSingle();
   return (data as Room | null) ?? null;
 }
+
+export type SiteStats = {
+  rooms: number;
+  players: number;
+};
+
+/** 首页的全站计数：一共开过多少局、一共有多少人玩过 */
+export async function fetchSiteStats(): Promise<SiteStats> {
+  const [roomsRes, playersRes] = await Promise.all([
+    supabase.from("rooms").select("id", { count: "exact", head: true }),
+    supabase.from("players").select("id", { count: "exact", head: true }),
+  ]);
+  return {
+    rooms: roomsRes.count ?? 0,
+    players: playersRes.count ?? 0,
+  };
+}
