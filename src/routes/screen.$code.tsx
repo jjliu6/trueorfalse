@@ -36,7 +36,25 @@ function ScreenPage() {
   const snd = useSound();
   const { fire, ref: confettiRef } = useConfetti();
 
-  const isHost = !!room && !!k && k === room.host_key;
+  // host_key 不再放在 rooms 表里公开可读，只能靠这个 RPC 校验——
+  // 它只回答"对不对"，不会把真实的 key 吐出来
+  const [isHost, setIsHost] = useState(false);
+  useEffect(() => {
+    if (!room || !k) {
+      setIsHost(false);
+      return;
+    }
+    let alive = true;
+    void supabase
+      .rpc("verify_host_key", { p_room_id: room.id, p_key: k })
+      .then(({ data }) => alive && setIsHost(data === true));
+    return () => {
+      alive = false;
+    };
+    // 故意只依赖 room?.id 而不是整个 room：room 每次实时更新（phase/current_player_id…）
+    // 都会是个新对象引用，校验结果只跟"是哪个房间"有关，没必要跟着 phase 变化重新校验
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [room?.id, k]);
 
   // 大屏锁滚动
   useEffect(() => {

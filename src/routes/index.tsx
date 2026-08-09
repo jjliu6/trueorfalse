@@ -74,10 +74,21 @@ function Index() {
       const newCode = makeCode();
       const { data, error } = await supabase
         .from("rooms")
-        .insert({ code: newCode, host_key: hostKey })
+        .insert({ code: newCode })
         .select()
         .single();
       if (data && !error) {
+        // host_key 单独存进只能 insert、不能 select 的 room_hosts 表——
+        // 写不进去这个房间就没法登录，主持人也没了控制权，所以失败就把房间也撤回
+        const { error: hostErr } = await supabase
+          .from("room_hosts")
+          .insert({ room_id: data.id, host_key: hostKey });
+        if (hostErr) {
+          await supabase.from("rooms").delete().eq("id", data.id);
+          setBusy(false);
+          setErr(t("home.err.create"));
+          return;
+        }
         setBusy(false);
         void navigate({ to: "/screen/$code", params: { code: newCode }, search: { k: hostKey } });
         return;
