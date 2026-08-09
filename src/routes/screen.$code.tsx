@@ -306,7 +306,7 @@ function ScreenPage() {
             left={left}
           />
         )}
-        {phase === "board" && <BoardScene players={submitted} />}
+        {phase === "board" && <BoardScene code={upper} players={submitted} />}
 
         {isHost && (
           <>
