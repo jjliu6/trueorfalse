@@ -5,7 +5,6 @@ export type Phase = "lobby" | "stage" | "voting" | "reveal" | "board";
 export type Room = {
   id: string;
   code: string;
-  host_key: string;
   phase: string;
   current_player_id: string | null;
   voting_ends_at: string | null;
@@ -35,9 +34,7 @@ export type Vote = {
   choice: string;
 };
 
-export const AVATARS = [
-  "🦊", "🐧", "🐼", "🦄", "🐯", "🐙", "🐳", "🦉", "🐝", "🦩", "🐨", "🐸",
-];
+export const AVATARS = ["🦊", "🐧", "🐼", "🦄", "🐯", "🐙", "🐳", "🦉", "🐝", "🦩", "🐨", "🐸"];
 
 export const playerKey = (code: string) => `tof_player_${code.toUpperCase()}`;
 
