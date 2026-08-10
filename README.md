@@ -1,147 +1,148 @@
 # Truth or Lie
 
-TRUE or FALSE · 真真假假
+TRUE or FALSE
 
-Hackathon 破冰游戏 —— 完整搭建手册（Lovable + Supabase 版）
+A complete build guide for an offline hackathon icebreaker game (Lovable + Supabase edition)
 
-配套文件：true-or-false.html（离线动效原型，双击就能开，先看效果再动手）
+Companion file: true-or-false.html (an offline animated prototype — just double-click to open and see how it feels before building anything)
 
-一、这个游戏怎么玩
+## 1. How the game is played
 
-10 个人，每人写一真一假两个故事，其他人猜哪个是真的。
+10 people, each writes one true story and one made-up story (two short stories total). Everyone else guesses which one is real.
 
-只有两种界面：主持人面前的大屏（投影），和所有人手机上的小屏。 没有第三个后台。
+There are only two screens: the big screen in front of the host (projector), and everyone's phone. There is no third "admin" screen.
 
-阶段 大屏（主持人电脑 → 投影） 手机（所有参与者） ① 故事墙 lobby 故事墙是主场：每有人提交，一张歪歪扭扭的便利贴飞上墙，上面是头像+名字+两个故事。二维码缩在右上角 填昵称 → 写两个故事（各限 40 字）→ 标哪个是真的 → 提交 ② 点名 随机点名（跑马灯扫过没讲的人，减速停下）或直接点某张贴纸 「XXX 上台了」 ③ 上台 stage 当前玩家头像浮起，A/B 两张大卡从左右滑入 「XXX 正在讲，认真听」 ④ 投票 voting 环形倒计时 20s + 滴答声，头像一个个亮起。只显示已投人数，不显示分布 两个大按钮 A / B ⑤ 揭晓 reveal 一声"咚"，假的盖 FAKE 红章+抖动变灰，真的发绿光+TRUE 章+彩带，票数条生长 「猜对了 / 被骗了」+ 本轮得分 ⑥ 回墙 讲过的人在墙上灰掉、盖绿色 ✓，一眼看出还剩谁 「等下一位」 ⑦ 榜单 board 最佳骗子 / 最佳侦探两个奖 + 排行榜条形图生长 自己的名次
+Stage | Big screen (host's laptop → projector) | Phone (all participants)
+--- | --- | ---
+① Story wall (lobby) | The story wall is the main stage: every time someone submits, a crooked sticky note flies onto the wall with an avatar, name, and both stories. The QR code shrinks into the top-right corner | Enter a nickname → write two stories (40 characters each) → mark which one is true → submit
+② Roll call | Random roll call (a marquee sweeps over everyone who hasn't gone yet and slows to a stop) or the host taps a sticky note directly | "XXX is up"
+③ On stage | The current player's avatar rises up; two large cards (A/B) slide in from left and right | "XXX is telling their stories, listen up"
+④ Voting | A 20s ring countdown with ticking sound, avatars light up one by one. Only the vote count is shown, never the distribution | Two big buttons, A / B
+⑤ Reveal | A "boom" sound; the fake one gets stamped FAKE in red and fades to gray with a shake; the real one glows green with a TRUE stamp and confetti; the vote bar grows | "You guessed right / You got fooled" + this round's score
+⑥ Back to wall | Players who've gone fade out on the wall with a green ✓, so it's obvious who's left | "Waiting for the next player"
+⑦ Leaderboard | Two special awards (Best Liar / Best Detective) + a growing bar-chart leaderboard | Your own rank
 
-游戏是一个循环：故事墙 → 点名 → 讲 → 投票 → 揭晓 → 回故事墙，直到所有贴纸都灰掉，才走最终榜单。
+The game loops: story wall → roll call → tell stories → vote → reveal → back to story wall, until every sticky note has faded, then it moves to the final leaderboard.
 
-计分与两个特别奖
+### Scoring and the two special awards
 
-猜对一个人 → +1 分
+- Guessing one person correctly → +1 point
+- If your fake story fools **more than half** of the room → +2 points ("Master Liar")
+- 🏆 Best Liar = the person with the highest fooled percentage (only one per game)
+- 🏆 Best Detective = the person with the most correct guesses
 
-你的假故事骗过 超过一半 的人 → +2 分（"骗术大师"）
+The "+2 for fooling more than half" rule is important — it gives storytellers a reason to actually put effort in instead of phoning it in. The two awards also mean different personality types each get their own moment in the spotlight — the good storytellers and the good readers of people.
 
-🏆 最佳骗子 = 被骗比例最高的人（一场只有一个）
+**Why cap each story at 40 characters?** It forces people to write a hook instead of an essay. Forms fill out fast, the wall stays tidy, and the pacing stays snappy. The real detail is saved for when they tell it out loud on stage — that's the best part of the game anyway.
 
-🏆 最佳侦探 = 猜对次数最多的人
+**Why hide the vote distribution while voting is open?** The moment people see "7 people picked A," everyone else piles on and the game falls apart. Showing only "7/9 voted" nudges people to vote without leaking any information.
 
-"骗过半数 +2"这条很关键：它让写故事的人有动力认真编，而不是随手糊弄。两个奖则让不同性格的人都有高光 —— 会编故事的和会看人的各拿一个。
+**Why does this need sound effects?** An icebreaker game with sound is a completely different experience from one without. A ticking sound every second for the last 10 seconds of the countdown (louder and higher-pitched in the last 3), and a low "boom" at the reveal — these two sounds pull everyone's attention back to the screen automatically, so the host never has to shout "everyone look here."
 
-为什么故事各限 40 字？ 逼大家写钩子而不是写小作文。填表快、墙上排版整齐、读起来节奏也快。真正的细节留到上台口头讲 —— 那才是这个游戏最好玩的部分。
+**Pacing** (about 25 minutes for 10 people): 4 minutes to fill out the form → roughly 2 minutes per player (5s roll call / 60s telling the story / 20s voting / 40s reveal reactions) → 2 minutes for the leaderboard.
 
-为什么投票时不显示分布？ 一旦看见"7 个人选了 A"，剩下的人会跟风，游戏就废了。只显示"已投 7/9"既能催人投票，又不泄露信息。
+## 2. How the host operates it: one button on the big screen does everything
 
-为什么一定要有音效？ 破冰游戏有声音和没声音差别巨大。倒计时最后 10 秒每秒一下滴答（最后 3 秒变高变响），揭晓时一声低沉的"咚"—— 这两个声音会让全场的注意力自动收拢，主持人不用喊"大家看这边"。
+The big screen already runs on the host's laptop, so the control button lives directly on that screen — no separate admin page needed.
 
-节奏（10 人约 25 分钟） 填表 4 分钟 → 每人一轮约 2 分钟（点名 5s / 讲 60s / 投票 20s / 揭晓吐槽 40s）→ 榜单 2 分钟。
+Design goals:
 
-二、主持人怎么操作：就在大屏上，一个按钮走到底
+- **Fully hidden by default.** The audience just sees a clean screen with no buttons.
+- Moving the mouse slides a control bar up from the bottom-right corner; it auto-hides again after 3.5 seconds of no activity (like a video player's controls).
+- **There is only one main button: "Next."** Its label automatically changes to whatever the next action is for the current stage:
 
-大屏本来就跑在主持人的电脑上，所以控制按钮直接长在大屏上，不需要另开一个后台页面。
+```
+Story wall ──🎲 Random roll call──▶ On stage ──🗳 Start 20s voting──▶ Voting ──✨ Reveal──▶ Reveal
+   ▲                                                                                │
+   └──────────────── ← Back to story wall to pick someone ─────────────────────────┘
+                                                (Everyone's gone → 🏆 Final leaderboard)
+```
 
-设计成这样：
+Roll call has two modes: press "🎲 Random roll call" and let the marquee spin to a stop on its own, or click a sticky note directly. Random is great for building suspense; clicking directly lets the host control the pacing — e.g. if the room's energy dips, pick whoever wrote the wildest story.
 
-平时完全隐藏。 观众看到的是干净的画面，没有任何按钮。
+Pressing spacebar = Next (during the story-wall stage, spacebar triggers random roll call), so the host never has to touch the mouse. Left arrow = go back a step.
 
-鼠标一动，右下角浮出一条控制条，3.5 秒不动又自动收回（就像视频播放器）。
+Four smaller buttons live in the control bar too: Back / Jump to leaderboard / 🔊 Sound toggle / Reset.
 
-主按钮只有一个：「下一步」。 当前在哪个阶段，按钮就自动变成下一步该做什么：
+**Why not build a "remote control on your phone" instead?** That's possible, but it's overkill for an in-person projector setup — the host is already standing next to the laptop, and hitting spacebar is faster than pulling out a phone. If your host needs to walk around the room, add a `/remote/:code` page — the logic is identical to this control bar, just rendered somewhere else.
 
-故事墙 ──🎲 随机点名──▶ 上台 ──🗳 开启投票 20s──▶ 投票 ──✨ 揭晓答案──▶ 揭晓
-   ▲                                                                    │
-   └──────────────── ← 回故事墙选人 ──────────────────────────────────────┘
-                                                （所有人都讲完了 → 🏆 最终榜单）
+## 3. Look at the prototype first
 
+Open `true-or-false.html`. In the top-right corner you can switch between 🖥 Big screen / 📱 Phone (this toggle only exists in the prototype, not in the real build).
 
-点名有两种方式：按「🎲 随机点名」让跑马灯扫一圈自己停，或者直接用鼠标点墙上某张贴纸。 随机适合暖场（悬念感强），手点适合主持人想调节奏时救场 —— 比如现场气氛冷了，就点那个故事最离谱的人先上。
+In the big-screen view:
 
-敲空格键 = 下一步（在故事墙阶段，空格就是随机点名），主持人可以全程不碰鼠标。左方向键 = 退回上一步。
+- Press **F** — simulate someone submitting (press it a few times to watch sticky notes fly onto the wall one by one)
+- Press **Space** — advance to the next step (on the story wall this triggers random roll call, so you can watch the marquee)
+- Click a sticky note directly — that person goes on stage immediately
+- Move the mouse — reveals the control bar, which includes "⚡ Auto demo" to run through the whole flow automatically
 
-控制条里另外四个小按钮：上一步 / 直接看榜单 / 🔊 音效开关 / 重置。
+⚠️ Turn your volume on. The countdown ticks and the reveal "boom" are both baked into the prototype (browsers require a click on the page before audio is allowed, so click anywhere once when you first open it).
 
-为什么不做成"手机遥控大屏"？ 也可以做，但对线下投影场景是多余的：主持人本来就站在电脑边上，敲空格比掏手机快。如果你的主持人要满场走动，再加一个 /remote/:code 页面就行 —— 逻辑跟大屏上这条控制条一模一样，只是换个地方渲染。
+All the data in the prototype is fake and only lives inside a single browser tab — nothing syncs across devices. Its purpose is to let you and your team validate the visuals and pacing before you build anything real, and to serve as a design reference.
 
-三、先看原型
+## 4. Why you need a database (for beginners)
 
-打开 true-or-false.html，右上角切换 🖥 大屏 / 📱 手机（这个切换器只是原型用的，真实版本没有）。
+You might be thinking: isn't a single web page enough?
 
-在大屏视图里：
+It's not — because there are 11 devices involved (1 laptop driving the projector + 10 phones), each running its own browser with no visibility into the others' memory. When someone submits their story on their phone, the laptop driving the projector has no idea it happened.
 
-按 F —— 模拟一个人提交（连按几次，看便利贴一张张飞上墙）
+So you need a "middleman" that every device can connect to:
 
-按空格 —— 走下一步（在故事墙上就是随机点名，看跑马灯）
+```
+Player's phone  ──write──▶  ┌──────────┐  ──push──▶  Big screen / projector
+Another phone   ──write──▶  │ Supabase │  ──push──▶  Everyone else's phones
+Host            ──write──▶  └──────────┘
+```
 
-直接点某张贴纸 —— 那个人立刻上台
+Supabase happens to provide exactly the three things this needs:
 
-移动鼠标 —— 唤出控制条，里面有「⚡ 自动演示」，会自动跑完整个流程
+- **Database (Postgres)** — stores rooms, players, stories, votes
+- **Realtime** — the moment data changes, every connected device is pushed a notification, instead of constantly polling "is there anything new?"
+- **RLS (Row Level Security)** — controls who can see which rows, which is how the answers stay hidden
 
-⚠️ 记得开音量。倒计时滴答和揭晓的"咚"都在里面（浏览器规定要先点一下页面才允许出声，所以第一次进去先随便点一下）。
+Lovable has Supabase integration built in, so connecting it takes a couple of clicks with no backend code required.
 
-原型里的数据全是假的、只跑在一个浏览器页面里，多台设备之间不会同步。它的作用是让你和团队先确认视觉和节奏，也是给 Lovable 的设计参考。
+## 5. Database schema (paste this whole section into the Supabase SQL Editor)
 
-四、为什么需要一个数据库（写给新手）
+### 5.1 Create tables
 
-你可能会想：不是一个网页就够了吗？
-
-不够。因为这里有 11 台设备（1 台投影电脑 + 10 部手机），它们各跑各的浏览器，互相看不见对方的内存。小明在手机上提交了故事，投影那台电脑根本不知道这事发生过。
-
-所以需要一个所有设备都能连的"中间人"：
-
-小明手机  ──写入──▶  ┌──────────┐  ──推送──▶  投影大屏
-Mia 手机  ──写入──▶  │ Supabase │  ──推送──▶  其他人手机
-主持人    ──写入──▶  └──────────┘
-
-
-Supabase 提供的三样东西正好是我们全部需要的：
-
-数据库（Postgres） —— 存房间、玩家、故事、投票
-
-Realtime（实时推送） —— 数据一变，所有连着的设备主动收到通知，不用不停地问"有更新吗"
-
-RLS（行级安全） —— 控制"谁能看到哪些数据"，我们用它来藏住答案
-
-Lovable 内置了 Supabase 集成，点几下就能连上，不用自己写后端。
-
-五、数据库结构（整段贴进 Supabase 的 SQL Editor）
-
-5.1 建表
-
--- 房间：一场活动一条记录。phase 是整个游戏的"总开关"
+```sql
+-- Rooms: one row per event. `phase` is the master switch for the whole game
 create table public.rooms (
   id                uuid primary key default gen_random_uuid(),
-  code              text unique not null,               -- 房间码，如 HACK26
-  host_key          text not null,                      -- 只有主持人知道，用来决定要不要显示控制条
+  code              text unique not null,               -- room code, e.g. HACK26
+  host_key          text not null,                      -- only the host knows this; it decides whether the control bar shows
   phase             text not null default 'lobby',      -- lobby|stage|voting|reveal|board
-  current_player_id uuid,                               -- 现在轮到谁
-  voting_ends_at    timestamptz,                        -- 投票截止时间（用来算倒计时）
+  current_player_id uuid,                               -- whose turn it currently is
+  voting_ends_at    timestamptz,                        -- voting deadline (used to compute the countdown)
   created_at        timestamptz default now()
 );
 
--- 玩家：公开可读，但这张表里【没有答案】
+-- Players: publicly readable, but this table has NO answers in it
 create table public.players (
   id             uuid primary key default gen_random_uuid(),
   room_id        uuid not null references public.rooms(id) on delete cascade,
   name           text not null,
   avatar         text default '🦊',
-  story_a        text check (char_length(story_a) <= 40),   -- 40 字硬上限，数据库这层也拦一道
+  story_a        text check (char_length(story_a) <= 40),   -- hard 40-char cap, enforced at the DB level too
   story_b        text check (char_length(story_b) <= 40),
   submitted      boolean default false,
   score          int default 0,
-  turn_done      boolean default false,   -- 讲过了没有，故事墙上灰掉的依据
-  correct_count  int default 0,           -- 猜对几次 → 最佳侦探
-  fooled_pct     int default 0,           -- 自己那轮骗到了百分之多少 → 最佳骗子
-  revealed_truth text,          -- 只有揭晓那一刻才写入 'A' 或 'B'
+  turn_done      boolean default false,   -- whether they've gone yet; drives the fade-out on the story wall
+  correct_count  int default 0,           -- how many times they guessed right → Best Detective
+  fooled_pct     int default 0,           -- what percentage they fooled in their own round → Best Liar
+  revealed_truth text,          -- only written to 'A' or 'B' at the moment of reveal
   created_at     timestamptz default now()
 );
 
--- 答案：单独一张表，配合 RLS 做到【任何前端都读不到】
+-- Answers: a separate table, paired with RLS, so that NO frontend can ever read it
 create table public.player_secrets (
   player_id uuid primary key references public.players(id) on delete cascade,
   truth     text not null check (truth in ('A','B'))
 );
 
--- 投票：unique 约束保证一人一票，且可以改票（用 upsert）
+-- Votes: a unique constraint guarantees one vote per person, and votes can be changed (via upsert)
 create table public.votes (
   id         uuid primary key default gen_random_uuid(),
   room_id    uuid not null references public.rooms(id) on delete cascade,
@@ -151,19 +152,21 @@ create table public.votes (
   created_at timestamptz default now(),
   unique (target_id, voter_id)
 );
+```
 
+### 5.2 Enable realtime
 
-5.2 打开实时推送
-
+```sql
 alter publication supabase_realtime add table public.rooms, public.players, public.votes;
--- replica identity full：让「更新」事件也带上完整行数据，前端才好用
+-- replica identity full: makes UPDATE events carry the full row, which the frontend needs
 alter table public.rooms   replica identity full;
 alter table public.players replica identity full;
 alter table public.votes   replica identity full;
+```
 
+### 5.3 Security policies (the most important part)
 
-5.3 安全策略（这段最关键）
-
+```sql
 alter table public.rooms          enable row level security;
 alter table public.players        enable row level security;
 alter table public.player_secrets enable row level security;
@@ -175,18 +178,19 @@ create policy "votes_read"   on public.votes   for select using (true);
 create policy "votes_write"  on public.votes   for insert with check (true);
 create policy "votes_update" on public.votes   for update using (true) with check (true);
 
--- player_secrets 只给「插入」权限，【一条 select 策略都不写】
--- => 提交时能写进去，但任何前端（包括打开 F12 的人）都查不出来
+-- player_secrets only gets an INSERT policy — there is deliberately NO select policy at all
+-- => submissions can write into it, but no frontend (including someone with devtools open) can ever query it
 create policy "secrets_insert" on public.player_secrets for insert with check (true);
+```
 
+**What is this defending against?** If the answer were stored directly in the `players` table, anyone with browser devtools open could see the full row the server returns and read the answer straight off it — and at an actual hackathon, someone really will try that. Isolating the answer into a write-only table closes that hole at the root.
 
-这一步在防什么？ 如果把答案直接存在 players 表里，任何人打开浏览器开发者工具，都能看到服务器返回的完整数据、直接拿到答案。Hackathon 现场真的会有人这么干。把答案隔离到一张"只写不读"的表，就从根上堵死了。
+### 5.4 Two database functions
 
-5.4 两个数据库函数
+`security definer` means the function runs with the database owner's privileges, bypassing RLS. So the answer is only ever released through this function, and only at the moment of reveal.
 
-security definer 的意思是：这个函数以数据库管理员身份运行，可以绕过 RLS。所以只有通过它、且只在该揭晓的时候，答案才会被放出来。
-
--- 揭晓：把答案从密室搬到公开表
+```sql
+-- Reveal: move the answer from the vault into the public table
 create or replace function public.reveal_truth(p_player uuid)
 returns text language plpgsql security definer set search_path = public as $$
 declare t text;
@@ -196,7 +200,7 @@ begin
   return t;
 end; $$;
 
--- 结算：算分（猜对 +1；骗过半数 +2）
+-- Settle the round: compute scores (+1 for a correct guess; +2 for fooling more than half)
 create or replace function public.settle_round(p_player uuid)
 returns void language plpgsql security definer set search_path = public as $$
 declare t text; total int; right_n int;
@@ -207,11 +211,11 @@ begin
   select count(*) into total   from votes where target_id = p_player;
   select count(*) into right_n from votes where target_id = p_player and choice = t;
 
-  -- 猜对的人：+1 分，并且「猜对次数」+1（用来评最佳侦探）
+  -- Everyone who guessed right: +1 point, and +1 to their correct_count (used for Best Detective)
   update players set score = score + 1, correct_count = correct_count + 1
    where id in (select voter_id from votes where target_id = p_player and choice = t);
 
-  -- 当事人：记录自己骗到了多少比例（用来评最佳骗子），骗过半数额外 +2
+  -- The player whose turn it was: record what percentage they fooled (used for Best Liar), +2 if they fooled more than half
   update players
      set turn_done  = true,
          fooled_pct = case when total > 0
@@ -223,255 +227,214 @@ end; $$;
 
 grant execute on function public.reveal_truth(uuid) to anon;
 grant execute on function public.settle_round(uuid) to anon;
+```
 
+## 6. Page structure (only three routes)
 
-六、页面结构（只有三个路由）
+Route | Who opens it | What it does
+--- | --- | ---
+`/` | Participants | Enter the room code → jump to `/play/:code`
+`/play/:code` | Participants' phones | A state machine that follows `room.phase` and switches screens automatically
+`/screen/:code?k=xxx` | Host's laptop → projector | The big screen + the hidden control bar
 
-路由 谁打开 干什么 / 参与者 输房间码 → 跳到 /play/:code /play/:code 参与者手机 一个状态机，跟着 room.phase 自动切界面 /screen/:code?k=xxx 主持人电脑 → 投影 大屏 + 隐藏式控制条
+**When does the control bar show up?** The `?k=` URL parameter has to match `rooms.host_key` for the control bar to render at all. Anyone without that parameter who opens `/screen/HACK26` just sees a read-only big screen — pressing spacebar does nothing. That way, if someone casts the big-screen link to their own phone, they can't accidentally break your flow.
 
-控制条什么时候显示？ URL 里的 ?k= 要等于 rooms.host_key 才渲染控制条。没有这个参数的人，即使打开了 /screen/HACK26，看到的也只是一块只读的大屏 —— 按空格没反应。这样万一有人把大屏链接投到自己手机上，也点不坏你的流程。
+**How are participants identified?** There's no login. After the first submission, `player.id` is saved in the browser's `localStorage`, so refreshing the page still recognizes who they are. That's plenty for a 10-person icebreaker game.
 
-参与者身份怎么认？ 不做登录。第一次提交后把 player.id 存进浏览器 localStorage，之后刷新页面也认得出是谁。10 人的破冰游戏，够用了。
+## 7. Build prompts (paste them one round at a time, three rounds total)
 
-七、Lovable 提示词（分三轮，逐轮粘贴）
+**Why split it into rounds?** Doing too much in one shot tends to go off the rails. Scaffold first → wire up the data → add animation last — each round can be verified before moving on, and it's easy to roll back if something breaks. Strongly recommended: before the third round, upload screenshots of the prototype (story wall / reveal / leaderboard) and say "match this visual style" — it makes a big difference.
 
-为什么分三轮？ Lovable 一次做太多事容易做偏。先搭骨架 → 再接数据 → 最后加动效，每轮都能验证，出问题也好回退。 强烈建议：第三轮之前，把原型的截图（故事墙 / 揭晓 / 榜单 三张）上传给 Lovable，说"照这个视觉做"，效果会好非常多。
+### Round 1 · Scaffold
 
-第 1 轮 · 搭骨架
+Build an in-person hackathon icebreaker game called "TRUE or FALSE," using React + Tailwind, fully localized UI.
 
-做一个线下 Hackathon 破冰游戏「TRUE or FALSE 真真假假」，React + Tailwind，全中文界面。
+Only three routes (no extra admin backend):
+```
+/                    Participants enter a room code to join
+/play/:code          Participant's phone view, portrait-first
+/screen/:code?k=xxx  Projector view, 16:9 landscape, large text, dark background; the host's controls live directly on this page
+```
 
-只有三个路由（不要做额外的管理后台）：
-/                    参与者输房间码加入
-/play/:code          参与者手机端，竖屏优先
-/screen/:code?k=xxx  投影大屏，16:9 横屏，字要大，深色背景；主持人的控制按钮直接做在这个页面里
+Visual direction: dark `#07070f` background, three slowly drifting blurred light blobs (purple `#7c5cff` / cyan `#22d3ee` / magenta `#ff3b6b`), frosted-glass cards, 28px rounded corners. True = mint green `#3ddc97`, false = magenta `#ff3b6b`, gold `#ffcf5c` for first place.
 
-视觉方向：深色 #07070f 打底，背景三团缓慢漂移的模糊光斑（紫 #7c5cff / 青 #22d3ee / 玫红 #ff3b6b），
-毛玻璃卡片，圆角 28px。真=薄荷绿 #3ddc97，假=玫红 #ff3b6b，金色 #ffcf5c 用于第一名。
-中文字体 PingFang SC / Noto Sans SC。
+Build the static layout with hardcoded fake data first, no database wiring yet:
 
-这一轮先用写死的假数据把静态布局做出来，不接数据库：
+**[/screen lobby page]** — the story wall is the star, not the QR code
+- Top row: logo "TRUE or FALSE" on the left, a pill showing "7 / 10 submitted" next to it, and a small join card on the far right (an ~86px QR code + room code + URL) — it's a supporting element, don't let it take up much space
+- The middle area is the story wall: each person who has submitted is a "sticky note" showing avatar + name + story A + story B (show both stories, not just the name)
+  - Each note has a small semi-transparent strip of "tape" at the top
+  - Notes cycle through 5 semi-transparent colors (purple/cyan/pink/yellow/green) — don't make them all gray
+  - **Important:** notes should look crooked, not perfectly aligned — randomly rotate each one -4.5°~+4.5° and offset it vertically -14px~+14px, so it looks like it was stuck on by hand
+- Column count is computed from the number of players: `cols = min(5, max(2, ceil(count/2)))`, so up to 10 people always fits in two rows and the cards can stay large
+- Players who've already gone fade to 26% opacity + 0.9 grayscale, with a green circular ✓ badge in the top-right corner
+- Before anyone has submitted, the QR code enlarges to 250px and sits centered, with a line saying "write one true story and one made-up one — a single sentence is enough, save the details for when you tell it live"; once the first person submits, the QR code shrinks into the corner and the story wall expands
 
-【/screen 大厅页】—— 主角是「故事墙」，不是二维码
-- 顶部一行：左边 logo「TRUE or FALSE」，旁边一个胶囊显示「7 / 10 已提交」，
-  最右边一个小小的加入卡片（约 86px 的二维码 + 房间码 + 网址），它是配角，不要占大位置
-- 中间整片区域是故事墙：每个已提交的人是一张「便利贴」，上面有
-  头像 + 名字 + 故事A + 故事B（两个故事都要显示出来，不要只显示名字）
-  每张贴纸顶部有一小条半透明「胶带」
-  贴纸是 5 种半透明彩色轮流用（紫/青/粉/黄/绿），不要全是灰的
-  【重要】贴纸要东倒西歪、不要排得整整齐齐：每张随机旋转 -4.5°~+4.5°，
-  再随机上下错位 -14px~+14px，看起来像人手贴上去的
-- 列数按人数自动算：cols = min(5, max(2, ceil(人数/2)))，这样 10 人以内永远只有两行，卡片能大一些
-- 已经讲过的人，贴纸整体降到 26% 透明度 + 灰度 0.9，右上角盖一个绿色圆形 ✓ 徽章
-- 一个人都还没提交时，二维码放大到 250px 站在正中间，加一句
-  「写一个真故事、一个编的 —— 一句话就行，细节留着等下口头讲」；
-  第一个人提交后，二维码缩回右上角，故事墙展开
+**[/screen on-stage page]** current player's avatar + name at the top, two large story cards (labeled A / B) below, an empty status bar reserved at the bottom
+**[/screen leaderboard page]** top row: "🏆 Final Leaderboard" title on the left, two special-award cards side by side on the right (😈 Best Liar / 🕵️ Best Detective, each showing avatar + name + one line of description); 10 leaderboard rows below, each row showing [rank][medal][avatar][name][progress bar][score]. The whole page must fit within one 16:9 screen with no scrollbar
+**[/play]** five steps: nickname → write two stories → waiting → voting → results
+- The two story inputs both use `maxlength=40`, with a live "23/40" counter next to the label that turns yellow at ≥30 and red at 40
 
-【/screen 上台页】顶部当前玩家头像+名字，下面左右两张大故事卡（标 A / B），底部留一条空的状态栏
-【/screen 榜单页】顶部一行：左边「🏆 最终榜单」标题，右边并排两个特别奖卡片
-  （😈 最佳骗子 / 🕵️ 最佳侦探，各显示头像+名字+一行说明）；下面 10 行排行榜，
-  每行 [名次][奖牌][头像][名字][进度条][分数]。整页要在 16:9 一屏内放得下，不许出现滚动条
-【/play】昵称页 / 写两个故事页 / 等待页 / 投票页 / 结果页，五个步骤
-  写故事页两个输入框都是 maxlength=40，label 右侧实时显示「23/40」，
-  ≥30 字变黄、满 40 变红
+### Round 2 · Wire up Supabase + the host control bar
 
-
-第 2 轮 · 接 Supabase + 主持人控制条
-
-连接 Supabase，按下面的表结构接真实数据（SQL 我已经跑过了，表已存在）：
+Connect Supabase and wire up real data against this schema (the SQL has already been run, the tables already exist):
+```
 rooms(id, code, host_key, phase, current_player_id, voting_ends_at)
 players(id, room_id, name, avatar, story_a, story_b, submitted, score, turn_done, revealed_truth)
-player_secrets(player_id, truth)   -- 只能 insert，前端读不到，不要尝试 select 它
-votes(id, room_id, target_id, voter_id, choice)   -- (target_id, voter_id) 唯一
+player_secrets(player_id, truth)   -- insert-only, the frontend can't read it, don't attempt to select it
+votes(id, room_id, target_id, voter_id, choice)   -- unique on (target_id, voter_id)
+```
 
-数据行为：
-1. 参与者提交故事时：先 insert players（不带答案），拿到 id 后再 insert player_secrets(player_id, truth)。
-   把 player.id 存进 localStorage，key 用 `tof_player_<code>`。
-2. 两个页面都用 Supabase Realtime 订阅 rooms / players / votes 的变化，收到事件就更新 state。不要轮询。
-3. room.phase 是唯一的真相来源，/play 和 /screen 都根据它自动切界面，永远不会不同步：
-   lobby → 填表 / 故事墙
-   stage → "XXX 正在讲" / 两张故事卡
-   voting → A|B 投票按钮 / 倒计时 + 已投人数
-   reveal → 猜对猜错 / 盖章揭晓
-   board  → 我的名次 / 排行榜
-4. 投票用 upsert 写 votes，冲突键 (target_id, voter_id)，这样改票是覆盖而不是报错。
-5. 【非常重要】phase 变成 reveal 之前，任何页面都不许显示投票分布，
-   大屏只能显示「已投 N / M」这个数字。揭晓后才显示 A/B 各多少票。
+Data behavior:
+1. When a participant submits their stories: first insert into `players` (no answer), then use the returned id to insert into `player_secrets(player_id, truth)`. Store `player.id` in `localStorage` under the key `tof_player_<code>`.
+2. Both pages subscribe to Supabase Realtime changes on `rooms` / `players` / `votes` and update state when events arrive — no polling.
+3. `room.phase` is the single source of truth; `/play` and `/screen` both derive their UI from it, so they can never fall out of sync:
+   ```
+   lobby → fill out the form / story wall
+   stage → "XXX is telling their stories" / two story cards
+   voting → A|B vote buttons / countdown + vote count
+   reveal → right/wrong / the stamp reveal
+   board  → my rank / the leaderboard
+   ```
+4. Votes are written with an upsert keyed on `(target_id, voter_id)`, so changing your vote overwrites instead of erroring.
+5. **Very important:** no page may ever show the vote distribution before `phase` becomes `reveal` — the big screen can only show "N / M voted." The A/B breakdown is only shown after the reveal.
 
-主持人控制条（做在 /screen 页面里，不要单独开后台）：
-- 只有当 URL 参数 ?k= 等于 rooms.host_key 时才渲染这条控制条，否则大屏是纯只读的
-- 平时完全隐藏；监听 mousemove 时滑出（右下角，从下往上滑入），3.5 秒无操作自动收回
-- 主按钮只有一个，文案随当前 phase 自动变，点一下执行对应动作：
-    phase=lobby  → 还有人没讲：按钮「🎲 随机点名」→ 在 turn_done=false 的人里随机挑一个
-                   所有人都讲完：按钮「🏆 最终榜单」→ phase='board'
-    phase=stage  → 按钮「🗳 开启投票 20s」→ phase='voting'，voting_ends_at = now() + 20 秒
-    phase=voting → 按钮「✨ 揭晓答案」→ 依次 rpc('reveal_truth') → rpc('settle_round') → phase='reveal'
-    phase=reveal → 还有人没讲：按钮「← 回故事墙选人」→ phase='lobby'，current_player_id=null
-                   都讲完了：按钮「🏆 最终榜单」→ phase='board'
-    phase=board  → 按钮禁用，显示「✔ 游戏结束」
-  按钮旁边用小字显示当前阶段和一句状态（例如「故事墙 · 还剩 7 人 · 或直接点一张贴纸」）
-- 【点名的第二种方式】phase=lobby 且是主持人时，故事墙上 turn_done=false 的贴纸可以直接点击，
-  点谁谁上台（设 current_player_id，phase='stage'）。鼠标悬停时贴纸加青色描边和光晕。
-- 键盘快捷键：空格 / → = 下一步（在 lobby 就是随机点名），← = 退回上一步
-  输入框获得焦点时不响应快捷键
-- 控制条里另外四个小按钮：上一步 / 直接看榜单 / 🔊 音效开关 / 重置
-- 控制条隐藏时，右下角留一行极淡的小字「按 空格 进入下一步」
+Host control bar (built into the `/screen` page, no separate admin page):
+- Only render the control bar when the `?k=` URL parameter matches `rooms.host_key`; otherwise the big screen is purely read-only
+- Hidden by default; slides up from the bottom-right on `mousemove`, auto-hides after 3.5s of inactivity
+- One main button whose label changes automatically with the current phase, and whose click performs the matching action:
+  ```
+  phase=lobby  → someone hasn't gone yet: "🎲 Random roll call" → randomly pick someone with turn_done=false
+                 everyone's gone: "🏆 Final leaderboard" → phase='board'
+  phase=stage  → "🗳 Start 20s voting" → phase='voting', voting_ends_at = now() + 20 seconds
+  phase=voting → "✨ Reveal" → call rpc('reveal_truth') then rpc('settle_round') then phase='reveal'
+  phase=reveal → someone hasn't gone yet: "← Back to story wall" → phase='lobby', current_player_id=null
+                 everyone's gone: "🏆 Final leaderboard" → phase='board'
+  phase=board  → button disabled, shows "✔ Game over"
+  ```
+  Next to the button, show small text with the current phase and a status line (e.g. "Story wall · 7 people left · or click a note directly")
+- **Second way to pick who's next:** when `phase=lobby` and the viewer is the host, notes with `turn_done=false` are clickable directly — clicking one puts that person on stage (sets `current_player_id`, `phase='stage'`). Hovering adds a cyan outline and glow.
+- Keyboard shortcuts: Space / → = next step (on lobby this triggers random roll call), ← = go back. Shortcuts are disabled while an input field is focused.
+- Four smaller buttons in the control bar: Back / Jump to leaderboard / 🔊 Sound toggle / Reset
+- When the control bar is hidden, leave a faint line of text in the bottom-right corner: "Press Space for next step"
 
-倒计时的做法：不要各端各起一个计时器，全部读 voting_ends_at 这个时间戳自己算剩余秒数，
-这样 10 台手机和大屏的倒计时是一致的，不会各飘各的。
+For the countdown: don't run a separate timer per device — every device should read the `voting_ends_at` timestamp and compute the remaining seconds itself, so all 10 phones and the big screen stay in sync instead of drifting apart.
 
-榜单的两个特别奖（读 players 表算，不用新表）：
-- 😈 最佳骗子 = turn_done=true 的人里 fooled_pct 最高的
-- 🕵️ 最佳侦探 = correct_count 最高的
+The two special awards on the leaderboard (computed from the `players` table, no new table needed):
+- 😈 Best Liar = among players with `turn_done=true`, the one with the highest `fooled_pct`
+- 🕵️ Best Detective = the player with the highest `correct_count`
 
+### Round 3 · Add animation
 
-第 3 轮 · 加动效
+Now add animation to the big screen using framer-motion. Reference the screenshots I uploaded.
 
-现在给大屏加动效，用 framer-motion。参考我上传的截图。
+**Story wall (lobby):**
+- New note entrance: starts 80px below its resting position, scaled to 0.62, rotated to 5x its resting angle, then springs back to its own resting angle with easing `cubic-bezier(.16,1.15,.3,1)` over 0.75s
+- When multiple notes arrive at once, stagger their entrance by 85ms each
+- After landing, each note enters a slow 7-second "breathing" loop: rises 7px, rotation converges to 45% of its resting angle, repeating forever (the breathing keyframes must include the note's own rotation angle, or it'll snap upright)
+- The just-submitted note gets an extra cyan ring that expands outward and fades, over 1.3s
+- The room code uses a purple → cyan gradient with the gradient position animating continuously
+- When the wall is empty, the large QR code pulses a purple glow ring every 3 seconds
 
-故事墙（大厅）：
-- 新贴纸进场：从下方 80px 处、缩放 0.62、旋转角度放大 5 倍的状态，
-  弹性回弹到它自己的静止角度，缓动 cubic-bezier(.16,1.15,.3,1)，0.75s
-- 多张同时进场时 stagger 85ms 依次飞上墙
-- 进场结束后每张贴纸进入 7 秒周期的极缓慢「呼吸」：上浮 7px、旋转角度收敛到 45%，无限循环
-  （注意：呼吸动画的关键帧里必须带上这张贴纸自己的旋转角，否则会被摆正）
-- 刚提交的那张额外有一圈青色描边向外扩散消失，1.3s
-- 房间码用紫→青渐变文字，渐变位置循环流动
-- 空场时的大二维码，每 3 秒扩散一圈紫色光晕
+**Random roll-call marquee** (this is the key interaction — nail the "spinning wheel slowing down" feel):
+- Start by putting the story wall into a "spinning" state: all notes drop to 28% opacity + 0.6 grayscale
+- Use a recursive `setTimeout` to highlight one note at a time (cyan 4px outline + 80px glow + 1.35x brightness) with a short electronic blip sound each time; start at a 55ms interval and multiply it by 1.14 after every step so it gradually slows down; stop once the interval exceeds 300ms, landing on the pre-randomized winner
+- When it stops, switch that note to a gold outline + 120px gold glow, pop a small gold flag above it ("🎯 It's you!"), play a "ding," and hold for 0.9s before moving to the on-stage page
+- **Important:** implement all of this highlighting with `box-shadow` / `filter` / `opacity`, not `transform` — otherwise it'll fight with the breathing animation over the same property and they'll visually clash
 
-随机点名的跑马灯（这段是重点，做出转盘减速的手感）：
-- 开始时给故事墙加一个 spinning 状态：所有贴纸压到 28% 透明度 + 灰度 0.6
-- 用 setTimeout 递归，每次高亮一张（青色 4px 描边 + 80px 外发光 + 亮度 1.35），
-  同时播一声短促的电子音；初始间隔 55ms，每跳一次乘以 1.14 逐渐变慢，
-  间隔超过 300ms 就停下，落在预先随机好的那个人身上
-- 停下时那张换成金色描边 + 120px 金色外发光，头顶弹出一个金色小旗「🎯 就你了！」，
-  播一声"叮"，停留 0.9 秒再切到上台页
-- 【重要】这些高亮全部用 box-shadow / filter / opacity 实现，不要用 transform，
-  否则会跟贴纸的呼吸动画抢同一个属性，动画会打架
+**On stage:** the player's avatar floats up and down on a 3.4s loop; card A slides in from the left with a 24deg Y-axis rotation, card B slides in from the right, 120ms later
 
-上台：玩家头像上下浮动（3.4s 循环）；A 卡从左带 24deg 的 Y 轴旋转滑入，B 卡从右滑入，延迟 120ms
+**Voting:** a pill-shaped status bar at the bottom — a conic-gradient ring countdown on the left (computed from `voting_ends_at`), everyone's avatar dots in the middle (each one jumps from 35% opacity to fully bright once that person votes), and "4 / 9 voted" on the right
 
-投票：底部胶囊状态栏 —— 左边 conic-gradient 环形倒计时（读 voting_ends_at 算百分比），
-中间所有人的头像点，谁投过票谁就从 35% 透明度弹跳变亮，右边「已投 4 / 9」
+**Reveal (the emotional peak — go all out):**
+- The fake card: fades, dims, shrinks to 0.94, shakes left-right for 0.5s, and gets stamped with a red FAKE stamp (dropping in from 2.6x scale, tilted -9deg, springy easing)
+- The true card: border turns green, glows, scales up to 1.035, gets stamped with a green TRUE stamp
+- Full-screen canvas confetti burst (~150 pieces, with gravity and rotation, fading out over 2s)
+- Both cards grow a vote-share bar at the bottom, with "5 votes · 56%" in the top-right corner
+- A conclusion line at the bottom: if fooled more than half, "😈 XXX fooled 56% of the room — Master Liar, +2 points"; otherwise "🕵️ Only 44% were fooled, 5 people saw through it — +1 point"
+- Note: leave a 66px safe margin at the bottom for this text so it doesn't get covered by the host control bar
 
-揭晓（全场高潮，做足）：
-- 假的那张：变灰变暗、缩到 0.94、左右抖动 0.5s，盖下红色 FAKE 印章
-  （从 2.6 倍缩放砸下来，-9deg 倾斜，弹性缓动）
-- 真的那张：边框变绿、外发光、放大到 1.035，盖绿色 TRUE 章
-- 全屏 canvas 彩带爆炸（约 150 片，带重力和旋转，2 秒内淡出）
-- 两张卡底部各生长一条票数比例条，右上角「5 票 · 56%」
-- 底部一行结论：骗过半数显示「😈 XXX 骗过了 56% 的人 —— 骗术大师 +2 分」，
-  否则「🕵️ 只有 44% 的人被骗到，5 人识破 +1 分」
-- 注意：这行结论文字要留出底部 66px 的安全距离，别被主持人控制条压住
+**Leaderboard:** rows slide in from the left, staggered 90ms each; score bars grow from 0 over 1s; first place gets a full gold gradient row and gold progress bar; the two special-award cards bounce in from below (scale 0.8 → 1, springy easing) delayed 0.35s / 0.55s; fire confetti twice on entry plus an ascending musical scale
 
-榜单：每行从左滑入 stagger 90ms；分数条从 0 生长 1 秒；第一名整行金色渐变 + 金色进度条；
-两个特别奖卡片延迟 0.35s / 0.55s 从下方弹入（缩放 0.8 → 1，弹性缓动）；进场放两次彩带 + 一段上行音阶
+Mobile also needs feedback: tapping an option scales it to 0.98, the selected state gets a cyan outline + glow; on reveal, "You got it right" bounces in with an emoji.
 
-手机端也要反馈：点选项缩放到 0.98，选中态青色描边 + 光晕；揭晓时「猜对了」用 emoji 弹跳进场。
+### Round 4 · Sound effects
 
+Sound gets its own round because it tends to get lost in the shuffle of earlier rounds.
 
-第 4 轮 · 音效
+Add sound to the big screen. **Don't load any audio files** — synthesize everything live with the Web Audio API, so it still works even if the projector laptop loses its internet connection.
 
-音效单独一轮，因为它容易被前面几轮冲掉。
+Write a `useSound` hook with these methods:
+- `tick(strong)` — countdown tick: square wave, 900Hz normally / 1500Hz on emphasis, 45ms duration, volume 0.06 / 0.14
+- `ding()` — selection/submission: triangle wave, 1568Hz + 2349Hz layered, 160ms duration
+- `join()` — someone submitted and joined the wall: sine wave sliding from 880Hz to 1320Hz, 160ms duration, volume 0.07
+- `boom()` — the reveal "boom": sine 160Hz exponentially sliding down to 46Hz (550ms) + sine 80→36Hz (700ms), layered with 300ms of low-pass white noise (700Hz cutoff, decaying volume), like a mallet strike
+- `chime()` — the truth lighting up: four sine tones at 523/659/784/1046Hz, each staggered 75ms
+- `roll()` — each tick of the marquee: square wave, random 600~1100Hz, 35ms, very quiet
+- `fanfare()` — the final leaderboard: 523/659/784/1046/1319Hz in sequence, each staggered 110ms
 
-给大屏加音效。【不要加载任何音频文件】，全部用 Web Audio API 现场合成 —— 这样投影电脑断网也有声音。
+Key implementation details:
+1. Every sound's volume envelope must be "8ms linear attack → exponential decay to 0.0001" — never just switch an oscillator on and off, or you'll get a harsh "pop" that sounds terrible over speakers
+2. Browsers require a user gesture before audio is allowed: create the `AudioContext` and call `resume()` on the first `pointerdown` / `keydown`, using `{once: true}`
+3. Put a 🔊/🔇 toggle in the control bar; when muted, every method should just return immediately
 
-写一个 useSound Hook，里面几个方法：
-- tick(strong)  倒计时滴答：square 波，普通 900Hz / 强调 1500Hz，时长 45ms，音量 0.06 / 0.14
-- ding()        选中/提交：triangle 波 1568Hz + 2349Hz 叠一层，时长 160ms
-- join()        有人提交上墙：sine 波 880Hz 滑到 1320Hz，时长 160ms，音量 0.07
-- boom()        揭晓的"咚"：sine 160Hz 指数下滑到 46Hz（550ms）+ sine 80→36Hz（700ms）
-                再叠一段 300ms 的低通白噪声（截止 700Hz，音量递减），像鼓槌落下
-- chime()       真相亮起：523/659/784/1046Hz 四个 sine，每个错开 75ms
-- roll()        跑马灯每跳一格：square 波 600~1100Hz 随机，35ms，很轻
-- fanfare()     最终榜单：523/659/784/1046/1319Hz 依次，每个错开 110ms
+When each sound should play:
+- Someone submits and joins the wall → `join()`
+- Each step of the marquee → `roll()`; landing on a selection → `ding()`
+- Voting countdown: on each whole-second change, `tick(false)` at ≤10s, `tick(true)` at ≤3s, and `tick(true)` again at zero
+- Pressing "Reveal" → `boom()`, then `chime()` 260ms later
+- Entering the final leaderboard → `fanfare()`
 
-关键实现细节：
-1. 每个音的音量包络必须是「8ms 线性起音 → 指数衰减到 0.0001」，
-   不能直接开关振荡器，否则会有"啪"的爆音，在音箱上特别难听
-2. 浏览器规定必须有用户手势才能出声：在第一次 pointerdown / keydown 时
-   创建 AudioContext 并 resume()，用 {once:true}
-3. 控制条里放一个 🔊/🔇 开关，静音后所有方法直接 return
+## 8. Running it on the day of the event
 
-什么时候响：
-- 有人提交上墙 → join()
-- 跑马灯每跳一格 → roll()，停下选中 → ding()
-- 投票倒计时：剩余整秒数变化时，≤10 秒每秒 tick(false)，≤3 秒 tick(true)，归零再 tick(true)
-- 点「揭晓」→ boom()，260ms 后 chime()
-- 进最终榜单 → fanfare()
+**10 minutes before**
 
+- Open `/screen/HACK26?k=<your host_key>` on the host's laptop, hit F11 for fullscreen, browser zoom at 100%
+- Connect speakers, turn the volume up, click the page once (browsers require a click before audio is allowed). Press spacebar to check you can hear it
+- Scan the QR code with your own phone once to confirm you can join and submit — don't skip this step
+- Confirm the keyboard works (Space = next step)
 
-八、活动当天怎么跑
+**Kickoff**
 
-提前 10 分钟
+Leave the big screen on the story wall page with the QR code centered, and say something like:
 
-主持人电脑打开 /screen/HACK26?k=你的host_key，按 F11 全屏，浏览器缩放 100%
+"Two stories, one true and one made up, 40 characters max each. Write a hook, not an essay — save the details for when you tell it live on stage. The more specific it sounds, the more real it feels, and the easier it is to fool people."
 
-接音箱、开音量、点一下页面（浏览器要有一次点击才允许出声）。按空格听一下有没有声
+Once the first person submits, the QR code shrinks into the corner and the story wall expands. Notes fly onto the wall crooked, one by one — that's already the best icebreaker moment: people start reading each other's stories and razzing each other, and the energy builds on its own.
 
-自己用手机扫一次二维码，确认能进、能提交 —— 这一步一定要做
+**Each round (advance with spacebar)**
 
-确认键盘能用（空格 = 下一步）
+- Space → "🎲 Random roll call" → the marquee sweeps over whoever hasn't gone yet, slows to a stop, and pops a gold flag. If you'd rather control the pacing, skip spacebar and click a note directly instead — e.g. if the room feels cold, pick whoever wrote the wildest story first
+- That person goes on stage and tells both stories out loud (the most fun part of the whole game — don't rush it)
+- Space → "Start voting" → 20 seconds. The ticking sound kicks in automatically for the last 10 seconds, no need to announce it
+- Space → "Reveal" → a "boom" + confetti burst → let the player tell the full version of their true story
+- Space → "Back to story wall" → the player who just went fades out with a ✓, so it's obvious who's left. Repeat.
 
-开场
+**Wrap-up**
 
-大屏停在故事墙页，二维码在正中间。开口说：
+Once every note has faded, press Space → "🏆 Final leaderboard." Announce Best Liar and Best Detective first (those are more fun than the raw score), then the overall leaderboard, and give first place a small prize.
 
-"两个故事，一真一假，每个限 40 字。写钩子就行，别写小作文 —— 细节留着等下上台口头讲，讲得越具体越像真的，也越容易骗到人。"
+**A few common pitfalls**
 
-第一个人提交后二维码缩到角落，故事墙展开。贴纸一张张歪歪扭扭飞上墙，这本身就是最好的暖场 —— 大家会开始读别人的故事、互相起哄，气氛自然就起来了
+- Test the sound ahead of time. Browsers require a click before audio plays, so if you hit spacebar right at the start, the first sound might be silent
+- If the venue's WiFi is unreliable, have everyone switch to cellular data
+- The QR code shrinks to the corner once the story wall mode kicks in, so don't rush through the first 4 minutes — let stragglers finish scanning
+- Someone shows up late? The story wall stays open the whole time, so they can join whenever and their note will fly onto the wall and be selectable later
+- Never say the `?k=` value out loud or display it on screen
+- Fallback plan: if the network goes down, the host can read the stories out loud and everyone votes by show of hands — the game doesn't strictly depend on the tech
 
-每一轮（按空格推进）
+## 9. Nice-to-haves (none of these are required)
 
-空格 →「🎲 随机点名」→ 跑马灯扫过还没讲的人，减速停下，金色小旗弹出。 想调节奏就别按空格，直接用鼠标点墙上某张贴纸 —— 比如现场有点冷，就先点那个故事最离谱的人
+Addition | Why it's worth it | Cost
+--- | --- | ---
+Live vote-percentage heatmap on the story wall | After the reveal, each note gets a small "67% fooled" marker, which makes the final screen feel more like a story | Small
+Round replay | A 15-second flash montage before the leaderboard, quickly cycling through every round's TRUE/FAKE cards | Medium
+"Reverse round" | Round two flips to "guess which one is false," so the same group can play twice without it getting stale | Small
 
-当事人上台，口头讲这两个故事（全场最有意思的部分，别省）
+Two things deliberately left out (already cut, noting it here so they don't get re-proposed):
 
-空格 →「开启投票」→ 20 秒。最后 10 秒滴答声会自己响起来，你不用喊
-
-空格 →「揭晓」→ 一声"咚" + 彩带炸开 → 让当事人展开讲那个真故事的完整版
-
-空格 →「回故事墙」→ 讲过的人灰掉盖 ✓，一眼看出还剩谁。回到第 7 步
-
-收尾
-
-所有贴纸都灰了之后，空格 →「🏆 最终榜单」。 先念最佳骗子和最佳侦探（这两个奖比总分更有梗），再看总榜，给第一名一个小奖
-
-几个容易踩的坑
-
-音效一定要提前试。 浏览器要有一次点击才允许出声，如果开场直接按空格可能第一声是哑的
-
-会场 WiFi 不稳的话，让大家用 4G/5G
-
-二维码在故事墙模式下会缩小到角落，所以开场那 4 分钟别急着往下走，让还没扫的人扫完
-
-有人迟到？故事墙一直开着，随时能加，他的贴纸会飞上墙，之后照样能被点到
-
-别把 ?k= 那串东西念出来或投到屏幕上
-
-备用方案：万一网络挂了，主持人直接口头念故事、大家举手投票 —— 游戏本身不依赖技术
-
-九、还能再加的（都不是必须）
-
-加法 为什么值得 成本 故事墙上显示实时票型热力 揭晓后，墙上那张贴纸留下"被骗了 67%"的小标记，最后一屏看下来很有故事感 小 上一轮回放 榜单前放一个 15 秒快闪，把每轮的 TRUE/FAKE 卡快速刷一遍 中 第二局"反向局" 第二轮改成"猜哪个是假的"，同一批人玩两次不腻 小
-
-明确不做的两个（你已经砍掉了，记在这里免得下次又被提）：
-
-~~"改主意"按钮~~ —— 会让投票节奏拖沓，20 秒的紧张感是这个游戏的核心
-
-~~匿名模式~~ —— 破冰游戏的目的就是让大家记住名字，藏起来是反着来的
-
-This project was built with [Lovable](https://lovable.dev).
-
-**Live app**: https://truth-tangle-tales.lovable.app
-
-## Build with Lovable
-
-Continue developing this project in the [Lovable editor](https://lovable.dev/projects/7e51c442-4b5e-4e54-984e-28c1674d3509).
-
-- **Ship faster**: describe what you want to build and Lovable handles the code.
-- **Stay in sync**: every change made in Lovable is committed straight to this repository.
-- **Full ownership**: this code is yours. Push to `main` on GitHub and your changes sync back into Lovable, ready for your next prompt.
+- ~~A "change my mind" button~~ — it would slow down the voting pace, and the 20-second tension is core to the game
+- ~~Anonymous mode~~ — the whole point of an icebreaker is to get people to remember each other's names; hiding that defeats the purpose
 
 ## Development
 
