@@ -326,14 +326,13 @@ function ScreenPage() {
         )}
         {phase === "board" && <BoardScene code={upper} players={submitted} hostKey={k} />}
 
-        <a
-          className="screen-footer"
-          href="https://philosophie.ai"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Created by Eric Liu from Philosophie AI
-        </a>
+        <div className="screen-footer">
+          Created by{" "}
+          <a href="mailto:junjie@philosophie.ai">junjie@philosophie.ai</a> from{" "}
+          <a href="https://philosophie.ai" target="_blank" rel="noopener noreferrer">
+            Philosophie AI
+          </a>
+        </div>
 
         {isHost && (
           <>
