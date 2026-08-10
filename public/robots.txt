@@ -1,3 +1,6 @@
+# TRUE or FALSE · 真真假假 — robots
+# 传统搜索引擎爬虫
+
 User-agent: Googlebot
 Allow: /
 
@@ -10,5 +13,37 @@ Allow: /
 User-agent: facebookexternalhit
 Allow: /
 
+# 生成式 AI 引擎爬虫（GEO）—— 明确允许抓取，便于被准确引用
+User-agent: GPTBot
+Allow: /
+
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Claude-Web
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: Applebot-Extended
+Allow: /
+
 User-agent: *
 Allow: /
+# 临时对局页 / 私人页面无需索引
+Disallow: /play/
+Disallow: /screen/
+Disallow: /auth
+Disallow: /history
+
+Sitemap: https://truth-tangle-tales.lovable.app/sitemap.xml

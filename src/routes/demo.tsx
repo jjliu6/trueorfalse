@@ -8,19 +8,16 @@ import { useCountdown } from "@/hooks/useRoom";
 import { useDemo, DEMO_VOTE_SECONDS } from "@/hooks/useDemo";
 import { buildSnapshot } from "@/lib/records";
 import { useLang } from "@/lib/i18n";
+import { seo } from "@/lib/seo";
 
 export const Route = createFileRoute("/demo")({
-  head: () => ({
-    meta: [
-      { title: "自动演示 · TRUE or FALSE 真真假假" },
-      {
-        name: "description",
-        content: "15 秒看懂整局玩法：故事墙、点名、投票倒计时与最终榜单全自动播放。",
-      },
-      { property: "og:title", content: "自动演示 · TRUE or FALSE 真真假假" },
-      { property: "og:description", content: "不用凑人数，先看一遍全自动演示再开局。" },
-    ],
-  }),
+  head: () =>
+    seo({
+      title: "自动演示 · TRUE or FALSE 真真假假 | 15 秒看懂玩法",
+      description:
+        "不用凑人数，先看一遍真真假假全自动演示：故事墙、随机点名、投票倒计时与最终榜单一气呵成，15 秒看懂整局怎么玩。",
+      path: "/demo",
+    }),
   component: DemoPage,
 });
 

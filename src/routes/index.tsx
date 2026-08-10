@@ -4,23 +4,16 @@ import { supabase } from "@/integrations/supabase/client";
 import { Backdrop } from "@/components/tof/Backdrop";
 import { fetchRoomByCode, fetchSiteStats, makeCode, makeHostKey, type SiteStats } from "@/lib/tof";
 import { useLang } from "@/lib/i18n";
+import { seo, homeJsonLd } from "@/lib/seo";
 
 export const Route = createFileRoute("/")({
-  head: () => ({
-    meta: [
-      { title: "TRUE or FALSE · 真真假假 | 破冰游戏" },
-      {
-        name: "description",
-        content:
-          "线下 Hackathon 破冰游戏：每人写一真一假两个故事，其他人猜哪个是真的。输入房间码即可加入。",
-      },
-      { property: "og:title", content: "TRUE or FALSE · 真真假假" },
-      {
-        property: "og:description",
-        content: "一真一假两个故事，猜猜哪个是真的 —— 25 分钟破冰游戏。",
-      },
-    ],
-  }),
+  head: () =>
+    seo({
+      title: "TRUE or FALSE · 真真假假 | 线上破冰派对游戏",
+      description:
+        "真真假假（Two Truths and a Lie）线上版：每人写一真一假两个故事，其他人猜哪个是真的。手机输入房间码即加入，大屏投影，10 人约 25 分钟，免费无需下载 —— 聚会、团建、Hackathon 破冰首选。",
+      path: "/",
+    }),
   component: Index,
 });
 
@@ -93,6 +86,12 @@ function Index() {
 
   return (
     <>
+      {/* GEO：给生成式 AI 引擎（ChatGPT / Perplexity / Gemini）的结构化事实，
+          让它们能准确概括“怎么玩、几人、多久、免费”并在回答里引用本站。 */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(homeJsonLd()) }}
+      />
       <Backdrop />
       <main className="phone-root">
         <div className="pstep">

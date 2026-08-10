@@ -11,19 +11,20 @@ import { BoardView } from "@/components/tof/BoardView";
 import { buildSnapshot } from "@/lib/records";
 import { useSession } from "@/hooks/useSession";
 import { LobbyScene, SpotScene, PHASE_LABEL_KEY, VOTE_SECONDS } from "@/components/tof/GameScenes";
+import { seo } from "@/lib/seo";
 
 export const Route = createFileRoute("/screen/$code")({
   validateSearch: (search: Record<string, unknown>) => ({
     k: typeof search["k"] === "string" ? (search["k"] as string) : undefined,
   }),
-  head: () => ({
-    meta: [
-      { title: "大屏 · TRUE or FALSE 真真假假" },
-      { name: "description", content: "投影大屏：故事墙、点名、投票倒计时与最终榜单。" },
-      { property: "og:title", content: "大屏 · TRUE or FALSE 真真假假" },
-      { property: "og:description", content: "投影大屏：故事墙、点名、投票倒计时与最终榜单。" },
-    ],
-  }),
+  head: () =>
+    seo({
+      title: "大屏 · TRUE or FALSE 真真假假",
+      description: "投影大屏：故事墙、点名、投票倒计时与最终榜单。",
+      path: "/screen",
+      // 主持人大屏是临时对局页，不应被搜索引擎索引
+      noindex: true,
+    }),
   component: ScreenPage,
 });
 
