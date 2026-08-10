@@ -23,6 +23,15 @@ export function LangToggle() {
       >
         中文
       </button>
+      <span className="divider">/</span>
+      <button
+        type="button"
+        className={lang === "fr" ? "sel" : ""}
+        onClick={() => setLang("fr")}
+        aria-pressed={lang === "fr"}
+      >
+        Fr
+      </button>
     </div>
   );
 }

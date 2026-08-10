@@ -85,4 +85,43 @@ const EN: DemoSeed[] = [
   },
 ];
 
-export const DEMO_SETS: Record<Lang, DemoSeed[]> = { zh: ZH, en: EN };
+const FR: DemoSeed[] = [
+  {
+    name: "Alexandre",
+    avatar: "🦊",
+    a: "J'ai crevé un pneu en Islande et me suis retrouvé entouré de moutons pendant deux heures",
+    b: "J'ai créé une licence commerciale pour mon chat",
+  },
+  {
+    name: "Mia",
+    avatar: "🐧",
+    a: "Je n'ai jamais mis les pieds à la bibliothèque en quatre ans de fac, mais j'ai eu une bourse",
+    b: "J'ai perdu mon passeport dans le métro de Tokyo et je l'ai récupéré comme par magie",
+  },
+  {
+    name: "Jazz",
+    avatar: "🐼",
+    a: "J'ai fait du bénévolat à l'éclairage pour un concert de Jay Chou",
+    b: "J'ai appris à marcher sur les mains en une semaine",
+  },
+  {
+    name: "Vivian",
+    avatar: "🦄",
+    a: "Mon premier travail était de prendre des photos d'identité pour animaux",
+    b: "J'ai déjà fait une annonce en vol pour l'équipage",
+  },
+  {
+    name: "Wayne",
+    avatar: "🐯",
+    a: "La recette secrète de ma famille a été inscrite dans les archives du comté",
+    b: "Je me suis qualifié une fois pour un tournoi d'esport professionnel",
+  },
+  {
+    name: "Kenji",
+    avatar: "🐙",
+    a: "Je me suis endormi le soir où je suis allé voir les aurores boréales en Norvège",
+    b: "Je sais écrire en miroir de la main gauche",
+  },
+];
+
+export const DEMO_SETS: Record<Lang, DemoSeed[]> = { zh: ZH, en: EN, fr: FR };
