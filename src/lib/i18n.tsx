@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 
-export type Lang = "zh" | "en";
+export type Lang = "zh" | "en" | "fr";
 
 const STORAGE_KEY = "tof_lang";
 
@@ -344,7 +344,183 @@ const EN: Dict = {
   "history.delete": "Delete",
 };
 
-const DICTS: Record<Lang, Dict> = { zh: ZH, en: EN };
+const FR: Dict = {
+  "home.title.sub": "VRAI · FAUX",
+  "home.desc":
+    "Chacun écrit une histoire vraie et une inventée, les autres devinent laquelle est réelle.\nEntrez le code de la salle affiché sur le grand écran pour rejoindre.",
+  "home.stats.rooms": "🎲 {{n}} parties organisées",
+  "home.stats.players": "🙋 {{n}} joueurs ont déjà joué",
+  "home.code.label": "Code de la salle",
+  "home.code.placeholder": "ex. TFABCD",
+  "home.err.notfound": "Impossible de trouver cette salle — vérifiez le grand écran ?",
+  "home.err.create": "Échec de la création de la salle, réessayez",
+  "home.join": "Rejoindre la salle →",
+  "home.host": "🖥 Je suis l'animateur · créer une nouvelle salle",
+  "home.host.login": "📚 Connexion animateur · sauvegarder / exporter / voir l'historique",
+  "home.demo": "🎬 Regarder d'abord la démo automatique",
+
+  "demo.banner": "🎬 Démo automatique · en cours : {{phase}} · toutes les données sont fictives",
+  "demo.cta": "Quitter la démo, lancer une vraie partie →",
+  "demo.start": "▶ Cliquez pour démarrer la démo",
+  "demo.start.hint":
+    "Les navigateurs exigent un clic avant de jouer le son — cliquez une fois pour tout activer.",
+
+  "play.connecting": "Connexion à la salle…",
+  "play.missing.title": "Salle introuvable",
+  "play.missing.desc": "La salle {{code}} n'existe pas — vérifiez le code sur le grand écran.",
+  "play.join.title": "Rejoindre {{code}}",
+  "play.join.desc": "Choisissez un nom — tout le monde le verra sur le grand écran.",
+  "play.nick.label": "Pseudo",
+  "play.nick.placeholder": "ex. Alex / Mia",
+  "play.avatar.label": "Choisir un avatar",
+  "play.enter": "Continuer →",
+  "play.story.title": "Écrivez deux histoires",
+  "play.story.desc.1": "Une vraie, une inventée.",
+  "play.story.desc.2": "40 caractères max",
+  "play.story.desc.3": "— écrivez juste l'accroche, gardez les détails pour votre passage.",
+  "play.storyA.label": "Histoire A",
+  "play.storyA.placeholder":
+    "J'ai crevé un pneu en Islande et me suis retrouvé entouré de moutons pendant deux heures",
+  "play.storyB.label": "Histoire B",
+  "play.storyB.placeholder": "J'ai créé une licence commerciale pour mon chat",
+  "play.truth.label": "Laquelle est vraie ? (vous seul le savez)",
+  "play.truth.A": "A est vraie",
+  "play.truth.B": "B est vraie",
+  "play.err.submit": "Échec de l'envoi, réessayez",
+  "play.submit": "Envoyer ✓",
+  "play.lobby.title": "Envoyé",
+  "play.lobby.desc":
+    "Votre note est affichée sur le grand écran. Une fois tout le monde prêt, l'animateur commencera.",
+  "play.lobby.count": "{{n}} personnes ont envoyé · en attente du prochain tour",
+  "play.stage.me.h": "C'est à vous",
+  "play.stage.me.p": "Racontez les deux histoires — ne vous trahissez pas",
+  "play.stage.other.h": "{{name}} parle",
+  "play.stage.someone": "Quelqu'un",
+  "play.stage.other.p": "Écoutez bien — vous voterez ensuite",
+  "play.voting.me.h": "Tout le monde vote",
+  "play.voting.me.p": "{{n}} secondes restantes · gardez un visage neutre",
+  "play.voting.title": "Laquelle pensez-vous être vraie ?",
+  "play.voting.storyOf": "Les histoires de {{name}}",
+  "play.err.vote": "Le vote n'a pas été pris en compte, réessayez",
+  "play.countdown.timeup": "Temps écoulé, en attente de la révélation",
+  "play.countdown.locked": "Verrouillé, vous pouvez encore changer, mais il ne reste plus que ",
+  "play.countdown.left": "",
+  "play.countdown.sec": " secondes",
+  "play.reveal.master.h": "Maître de la tromperie !",
+  "play.reveal.busted.h": "Démasqué",
+  "play.reveal.fooled": "Vous avez trompé {{pct}}% des votants ({{n}} votes)",
+  "play.reveal.score": "Score actuel : {{n}}",
+  "play.reveal.novote.h": "Vous n'avez pas voté ce tour-ci",
+  "play.reveal.novote.p": "La vérité était {{t}} · soyez plus rapide la prochaine fois",
+  "play.reveal.right.h": "Bien deviné !",
+  "play.reveal.wrong.h": "Trompé",
+  "play.reveal.truth": "{{t}} était vraie · {{pct}}% des joueurs ont été trompés",
+  "play.reveal.plus1": "+1 · ",
+  "play.board.rank": "#{{n}}",
+  "play.board.summary": "{{score}} pts · {{correct}} bonnes réponses · {{fooled}}% trompés",
+  "play.board.cta": "Regardez le grand écran, c'est l'heure des récompenses",
+  "play.score": "{{n}} pts",
+
+  "screen.missing": "Salle {{code}} introuvable",
+  "screen.connecting": "Connexion…",
+  "screen.phase.lobby": "Mur d'histoires",
+  "screen.phase.stage": "Sur scène",
+  "screen.phase.voting": "Vote en cours",
+  "screen.phase.reveal": "Révélation",
+  "screen.phase.board": "Classement",
+  "screen.main.random": "🎲 Choisir un joueur",
+  "screen.status.remain": "{{n}} restants · ou cliquez directement sur une note",
+  "screen.main.board": "🏆 Classement final",
+  "screen.status.alldone": "Tout le monde est passé",
+  "screen.status.waiting": "En attente que tout le monde envoie",
+  "screen.main.vote": "🗳 Lancer le vote {{n}}s",
+  "screen.status.speaking": "{{name}} parle",
+  "screen.main.reveal": "✨ Révéler la réponse",
+  "screen.status.left": "{{n}} secondes restantes",
+  "screen.main.back": "← Retour au mur d'histoires",
+  "screen.status.remainNoTalk": "{{n}} personnes n'ont pas encore parlé",
+  "screen.status.alldone2": "Tout le monde est passé",
+  "screen.main.over": "✔ Partie terminée",
+  "screen.status.award": "Heure des récompenses",
+  "screen.hud.back": "← Retour",
+  "screen.hud.board": "🏆 Aller au classement",
+  "screen.hud.muted": "🔇 Muet",
+  "screen.hud.sound": "🔊 Son",
+  "screen.hud.reset": "↺ Réinitialiser",
+  "screen.keyhint":
+    "Appuyez sur Espace pour continuer · bougez la souris pour afficher les contrôles",
+  "screen.reset.confirm":
+    "Réinitialiser cette partie : efface tous les votes et scores, garde le mur d'histoires. Êtes-vous sûr ?",
+
+  "lobby.submitted": "{{n}} envoyées",
+  "lobby.scan": "Scannez pour rejoindre",
+  "lobby.scanOrCode": "Scannez pour rejoindre · ou entrez le code de la salle",
+  "lobby.tips":
+    "Écrivez une histoire vraie et une fausse — une phrase suffit\nGardez les détails pour votre passage",
+  "lobby.pickflag": "🎯 C'est vous !",
+
+  "spot.hint.stage": "Racontez les deux histoires — une seule est vraie",
+  "spot.hint.voting": "Tout le monde vote, ne regardez pas les téléphones des autres",
+  "spot.hint.reveal": "Réponse révélée",
+  "spot.votecount": "{{n}} votes · {{pct}}%",
+  "spot.voted": "{{n}} / {{total}} ont voté",
+  "spot.master": "😈 {{name}} a trompé {{pct}}% des joueurs — maître de la tromperie +2",
+  "spot.detective": "🕵️ Seulement {{pct}}% ont été trompés, {{n}} ont vu clair +1",
+
+  "board.title": "🏆 Classement final",
+  "board.rule": "Bonne réponse +1 · tromper la moitié +2",
+  "board.liar": "Meilleur menteur",
+  "board.detective": "Meilleur détective",
+  "board.liar.meta": "A trompé {{pct}}% des joueurs",
+  "board.detective.meta": "{{n}} bonnes réponses",
+
+  "board.save.busy": "Sauvegarde automatique…",
+  "board.save.auto": "💾 Sauvegardé automatiquement ✓",
+  "board.export": "🖼 Exporter l'image récap",
+  "board.export.busy": "Exportation…",
+  "board.history": "📚 Historique",
+  "board.gate":
+    "Connectez-vous pour sauvegarder automatiquement cette partie, ou exporter le récap",
+  "board.login": "🔐 S'inscrire / se connecter",
+  "board.save.err": "Échec de la sauvegarde automatique : {{msg}}",
+  "board.export.ok": "Image récap exportée ✓",
+  "board.export.err": "Échec de l'exportation, réessayez",
+
+  "auth.title.host": "Animateur",
+  "auth.title.login": "Connexion",
+  "auth.sub": "Sauvegarder les parties · exporter les récaps · voir l'historique",
+  "auth.desc.pre":
+    "Aucun compte n'est nécessaire pour jouer. Un compte est requis uniquement pour ",
+  "auth.desc.bold":
+    "sauvegarder les parties, exporter les images récap ou consulter les classements passés",
+  "auth.desc.post": ".",
+  "auth.mode.in": "Se connecter",
+  "auth.mode.up": "S'inscrire",
+  "auth.email.label": "E-mail",
+  "auth.pw.label": "Mot de passe",
+  "auth.pw.placeholder": "6 caractères minimum",
+  "auth.msg.signupSent":
+    "E-mail de confirmation envoyé — cliquez sur le lien qu'il contient pour finaliser la connexion.",
+  "auth.submit.up": "S'inscrire et se connecter →",
+  "auth.submit.in": "Se connecter →",
+  "auth.back": "← Retour à l'accueil",
+
+  "history.title.a": "Historique",
+  "history.title.b": "des parties",
+  "history.sub": "Toutes les parties sauvegardées apparaissent ici",
+  "history.home": "Accueil",
+  "history.signout": "Se déconnecter",
+  "history.loading": "Chargement…",
+  "history.empty":
+    "Pas encore d'enregistrement. Cliquez sur « Sauvegarder » sur l'écran du classement pour en ajouter un ici.",
+  "history.item.title": "Salle {{code}}",
+  "history.item.meta": "{{n}} personnes",
+  "history.collapse": "Réduire",
+  "history.view": "Voir",
+  "history.delete": "Supprimer",
+};
+
+const DICTS: Record<Lang, Dict> = { zh: ZH, en: EN, fr: FR };
 
 type LangContextValue = {
   lang: Lang;
@@ -364,7 +540,7 @@ export function LangProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved === "en" || saved === "zh") setLangState(saved);
+    if (saved === "en" || saved === "zh" || saved === "fr") setLangState(saved);
   }, []);
 
   const setLang = (l: Lang) => {
@@ -382,6 +558,12 @@ export function LangProvider({ children }: { children: ReactNode }) {
   );
 
   return <LangContext.Provider value={value}>{children}</LangContext.Provider>;
+}
+
+const BCP47: Record<Lang, string> = { zh: "zh-CN", en: "en-US", fr: "fr-FR" };
+
+export function localeOf(lang: Lang) {
+  return BCP47[lang];
 }
 
 export function useLang() {

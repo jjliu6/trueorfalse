@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Backdrop } from "@/components/tof/Backdrop";
 import { BoardView } from "@/components/tof/BoardView";
 import { isSnapshot, type GameSnapshot } from "@/lib/records";
-import { useLang } from "@/lib/i18n";
+import { localeOf, useLang } from "@/lib/i18n";
 
 export const Route = createFileRoute("/_authenticated/history")({
   head: () => ({
@@ -94,8 +94,7 @@ function HistoryPage() {
                   {r.title || t("history.item.title", { code: r.room_code })}
                 </div>
                 <div className="hist-meta">
-                  {new Date(r.played_at).toLocaleString(lang === "zh" ? "zh-CN" : "en-US")} ·{" "}
-                  {r.room_code} ·{" "}
+                  {new Date(r.played_at).toLocaleString(localeOf(lang))} · {r.room_code} ·{" "}
                   {t("history.item.meta", {
                     n: isSnapshot(r.snapshot) ? r.snapshot.players.length : 0,
                   })}
@@ -120,7 +119,7 @@ function HistoryPage() {
           <div className="hist-view">
             <BoardView
               players={snap.players}
-              caption={`${open?.room_code ?? ""} · ${new Date(open!.played_at).toLocaleString(lang === "zh" ? "zh-CN" : "en-US")}`}
+              caption={`${open?.room_code ?? ""} · ${new Date(open!.played_at).toLocaleString(localeOf(lang))}`}
             />
             <div className="hist-stories">
               {snap.players.map((p) => (
