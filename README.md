@@ -78,7 +78,7 @@ Hackathon 破冰游戏 —— 完整搭建手册（Lovable + Supabase 版）
 
 ⚠️ 记得开音量。倒计时滴答和揭晓的"咚"都在里面（浏览器规定要先点一下页面才允许出声，所以第一次进去先随便点一下）。
 
-原型里的数据全是假的、只跑在一个浏览器页面里，多台设备之间不会同步。它的作用是让你和团队先确认视觉和节奏，也是给 Lovable 的设计参考。
+原型里的数据全是假的、只跑在一个浏览器页面里，多台设备之间不会同步。它的作用是让你和团队先确认视觉和节奏，也是给设计参考。
 
 四、为什么需要一个数据库（写给新手）
 
@@ -100,8 +100,6 @@ Supabase 提供的三样东西正好是我们全部需要的：
 Realtime（实时推送） —— 数据一变，所有连着的设备主动收到通知，不用不停地问"有更新吗"
 
 RLS（行级安全） —— 控制"谁能看到哪些数据"，我们用它来藏住答案
-
-Lovable 内置了 Supabase 集成，点几下就能连上，不用自己写后端。
 
 五、数据库结构（整段贴进 Supabase 的 SQL Editor）
 
@@ -233,9 +231,9 @@ grant execute on function public.settle_round(uuid) to anon;
 
 参与者身份怎么认？ 不做登录。第一次提交后把 player.id 存进浏览器 localStorage，之后刷新页面也认得出是谁。10 人的破冰游戏，够用了。
 
-七、Lovable 提示词（分三轮，逐轮粘贴）
+七、提示词（分三轮，逐轮粘贴）
 
-为什么分三轮？ Lovable 一次做太多事容易做偏。先搭骨架 → 再接数据 → 最后加动效，每轮都能验证，出问题也好回退。 强烈建议：第三轮之前，把原型的截图（故事墙 / 揭晓 / 榜单 三张）上传给 Lovable，说"照这个视觉做"，效果会好非常多。
+为什么分三轮？ 一次做太多事容易做偏。先搭骨架 → 再接数据 → 最后加动效，每轮都能验证，出问题也好回退。 强烈建议：第三轮之前，把原型的截图（故事墙 / 揭晓 / 榜单 三张）上传，说"照这个视觉做"，效果会好非常多。
 
 第 1 轮 · 搭骨架
 
@@ -460,18 +458,6 @@ votes(id, room_id, target_id, voter_id, choice)   -- (target_id, voter_id) 唯�
 ~~"改主意"按钮~~ —— 会让投票节奏拖沓，20 秒的紧张感是这个游戏的核心
 
 ~~匿名模式~~ —— 破冰游戏的目的就是让大家记住名字，藏起来是反着来的
-
-This project was built with [Lovable](https://lovable.dev).
-
-**Live app**: https://truth-tangle-tales.lovable.app
-
-## Build with Lovable
-
-Continue developing this project in the [Lovable editor](https://lovable.dev/projects/7e51c442-4b5e-4e54-984e-28c1674d3509).
-
-- **Ship faster**: describe what you want to build and Lovable handles the code.
-- **Stay in sync**: every change made in Lovable is committed straight to this repository.
-- **Full ownership**: this code is yours. Push to `main` on GitHub and your changes sync back into Lovable, ready for your next prompt.
 
 ## Development
 
