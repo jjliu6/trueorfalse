@@ -5,16 +5,17 @@ import { Backdrop } from "@/components/tof/Backdrop";
 import { BoardView } from "@/components/tof/BoardView";
 import { isSnapshot, type GameSnapshot } from "@/lib/records";
 import { localeOf, useLang } from "@/lib/i18n";
+import { seo } from "@/lib/seo";
 
 export const Route = createFileRoute("/_authenticated/history")({
-  head: () => ({
-    meta: [
-      { title: "历史记录 · TRUE or FALSE 真真假假" },
-      { name: "description", content: "回看保存过的每一场真真假假对局榜单与故事。" },
-      { property: "og:title", content: "历史记录 · TRUE or FALSE" },
-      { property: "og:description", content: "回看保存过的每一场对局榜单与故事。" },
-    ],
-  }),
+  head: () =>
+    seo({
+      title: "历史记录 · TRUE or FALSE 真真假假",
+      description: "回看保存过的每一场真真假假对局榜单与故事。",
+      path: "/history",
+      // 私人对局历史，不应被索引
+      noindex: true,
+    }),
   component: HistoryPage,
 });
 

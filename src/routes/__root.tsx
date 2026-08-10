@@ -13,6 +13,7 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { LangProvider } from "../lib/i18n";
 import { LangToggle } from "../components/tof/LangToggle";
+import { SITE_NAME, SITE_URL, OG_IMAGE } from "../lib/seo";
 
 function NotFoundComponent() {
   return (
@@ -78,15 +79,47 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   head: () => ({
     meta: [
       { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      {
+        name: "viewport",
+        content: "width=device-width, initial-scale=1, viewport-fit=cover",
+      },
+      { title: `${SITE_NAME} | 线上破冰派对游戏` },
+      {
+        name: "description",
+        content:
+          "真真假假（Two Truths and a Lie）线上版：每人写一真一假两个故事，其他人猜哪个是真的。手机输入房间码即加入，大屏投影，10 人约 25 分钟，免费无需下载 —— 聚会、团建、Hackathon 破冰首选。",
+      },
+      {
+        name: "keywords",
+        content:
+          "真真假假,两真一假,Two Truths and a Lie,破冰游戏,团建游戏,聚会游戏,派对游戏,Hackathon,icebreaker,在线多人游戏",
+      },
+      { name: "author", content: SITE_NAME },
+      { name: "theme-color", content: "#0b0f1c" },
+      { name: "application-name", content: SITE_NAME },
+      { name: "apple-mobile-web-app-title", content: "真真假假" },
+      { name: "robots", content: "index, follow" },
+      { property: "og:title", content: `${SITE_NAME} | 线上破冰派对游戏` },
+      {
+        property: "og:description",
+        content: "一真一假两个故事，猜猜哪个是真的 —— 手机加入、大屏投影的 25 分钟破冰派对游戏。",
+      },
       { property: "og:type", content: "website" },
+      { property: "og:url", content: SITE_URL },
+      { property: "og:site_name", content: SITE_NAME },
+      { property: "og:locale", content: "zh_CN" },
+      { property: "og:locale:alternate", content: "en_US" },
+      { property: "og:image", content: OG_IMAGE },
+      { property: "og:image:width", content: "1200" },
+      { property: "og:image:height", content: "630" },
+      { property: "og:image:alt", content: SITE_NAME },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:title", content: `${SITE_NAME} | 线上破冰派对游戏` },
+      {
+        name: "twitter:description",
+        content: "一真一假两个故事，猜猜哪个是真的 —— 手机加入、大屏投影的 25 分钟破冰派对游戏。",
+      },
+      { name: "twitter:image", content: OG_IMAGE },
     ],
     links: [
       {
@@ -94,6 +127,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         href: appCss,
       },
       { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
+      { rel: "apple-touch-icon", href: "/favicon.ico" },
+      { rel: "canonical", href: SITE_URL },
     ],
   }),
   shellComponent: RootShell,
@@ -104,7 +139,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="zh-CN">
       <head>
         <HeadContent />
       </head>

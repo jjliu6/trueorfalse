@@ -4,22 +4,20 @@ import { supabase } from "@/integrations/supabase/client";
 import { Backdrop } from "@/components/tof/Backdrop";
 import { useSession } from "@/hooks/useSession";
 import { useLang } from "@/lib/i18n";
+import { seo } from "@/lib/seo";
 
 export const Route = createFileRoute("/auth")({
   validateSearch: (search: Record<string, unknown>) => ({
     redirect: typeof search["redirect"] === "string" ? (search["redirect"] as string) : undefined,
   }),
-  head: () => ({
-    meta: [
-      { title: "主持人登录 · TRUE or FALSE 真真假假" },
-      {
-        name: "description",
-        content: "主持人注册登录后即可保存对局记录、导出战报图并回看历史榜单。",
-      },
-      { property: "og:title", content: "主持人登录 · TRUE or FALSE" },
-      { property: "og:description", content: "登录后保存对局记录、导出战报图、回看历史榜单。" },
-    ],
-  }),
+  head: () =>
+    seo({
+      title: "主持人登录 · TRUE or FALSE 真真假假",
+      description: "主持人注册登录后即可保存对局记录、导出战报图并回看历史榜单。",
+      path: "/auth",
+      // 登录页无需被索引
+      noindex: true,
+    }),
   component: AuthPage,
 });
 

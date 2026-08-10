@@ -5,16 +5,17 @@ import { Backdrop } from "@/components/tof/Backdrop";
 import { useCountdown, useRoom } from "@/hooks/useRoom";
 import { AVATARS, playerKey, type Player, type Vote } from "@/lib/tof";
 import { useLang } from "@/lib/i18n";
+import { seo } from "@/lib/seo";
 
 export const Route = createFileRoute("/play/$code")({
-  head: () => ({
-    meta: [
-      { title: "加入游戏 · TRUE or FALSE 真真假假" },
-      { name: "description", content: "写下一真一假两个故事，然后猜猜别人的哪个是真的。" },
-      { property: "og:title", content: "加入 TRUE or FALSE 真真假假" },
-      { property: "og:description", content: "写下一真一假两个故事，然后猜猜别人的哪个是真的。" },
-    ],
-  }),
+  head: () =>
+    seo({
+      title: "加入游戏 · TRUE or FALSE 真真假假",
+      description: "写下一真一假两个故事，然后猜猜别人的哪个是真的。",
+      path: "/play",
+      // 房间是临时对局页，不应被搜索引擎索引
+      noindex: true,
+    }),
   component: PlayPage,
 });
 
