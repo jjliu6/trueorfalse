@@ -27,20 +27,51 @@ function Index() {
 
   useEffect(() => {
     let alive = true;
-    void fetchSiteStats().then((s) => alive && setStats(s));
+    const refresh = () => void fetchSiteStats().then((s) => alive && setStats(s));
+    refresh();
 
     // 有新玩家提交时重新拉一次统计——"局数"取决于哪些房间有人提交过，
-    // 不是简单 +1 能算对的，所以直接重新查一次，量级很小，不用担心开销
-    const channel = supabase
-      .channel("home-stats")
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "players" }, () => {
-        void fetchSiteStats().then((s) => alive && setStats(s));
-      })
-      .subscribe();
+    // 不是简单 +1 能算对的，所以直接重新查一次，量级很小，不用担心开销。
+    // channel 断线（CHANNEL_ERROR/TIMED_OUT/CLOSED）之后不会自己恢复，
+    // 用户就会一直卡在打开页面那一刻的旧数字，得手动刷新才会更新——
+    // 所以断线时既重连、也顺手兜底刷一次数字。
+    let channel: ReturnType<typeof supabase.channel> | null = null;
+    let reconnectTimer = 0;
+    const connect = () => {
+      channel = supabase
+        .channel("home-stats")
+        .on("postgres_changes", { event: "INSERT", schema: "public", table: "players" }, refresh)
+        .subscribe((status) => {
+          if (!alive) return;
+          if (status === "SUBSCRIBED") {
+            refresh();
+            return;
+          }
+          if (status === "CHANNEL_ERROR" || status === "TIMED_OUT" || status === "CLOSED") {
+            window.clearTimeout(reconnectTimer);
+            reconnectTimer = window.setTimeout(() => {
+              if (!alive || !channel) return;
+              void supabase.removeChannel(channel);
+              connect();
+            }, 2000);
+          }
+        });
+    };
+    connect();
+
+    // 手机切后台/锁屏再回来时 websocket 经常已经悄悄断了，回到前台时兜底刷新一次
+    const onVisibility = () => {
+      if (document.visibilityState === "visible") refresh();
+    };
+    document.addEventListener("visibilitychange", onVisibility);
+    window.addEventListener("online", refresh);
 
     return () => {
       alive = false;
-      void supabase.removeChannel(channel);
+      window.clearTimeout(reconnectTimer);
+      document.removeEventListener("visibilitychange", onVisibility);
+      window.removeEventListener("online", refresh);
+      if (channel) void supabase.removeChannel(channel);
     };
   }, []);
 
