@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Backdrop } from "@/components/tof/Backdrop";
-import { useCountdown, useRoom } from "@/hooks/useRoom";
+import { useCountdown, useRoom, useServerClockOffset } from "@/hooks/useRoom";
 import { AVATARS, playerKey, type Player, type Vote } from "@/lib/tof";
 import { useLang } from "@/lib/i18n";
 import { seo } from "@/lib/seo";
@@ -66,7 +66,8 @@ function PlayPage() {
   );
   const shownChoice =
     localChoice && localChoice.target === current?.id ? localChoice.choice : myVote?.choice;
-  const left = useCountdown(room?.voting_ends_at);
+  const clockOffsetMs = useServerClockOffset();
+  const left = useCountdown(room?.voting_ends_at, clockOffsetMs);
 
   const submit = async () => {
     if (!room || !truth || !storyA.trim() || !storyB.trim()) return;

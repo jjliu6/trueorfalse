@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Backdrop } from "@/components/tof/Backdrop";
 import { ConfettiCanvas, useConfetti } from "@/components/tof/Confetti";
-import { useCountdown, useRoom } from "@/hooks/useRoom";
+import { useCountdown, useRoom, useServerClockOffset } from "@/hooks/useRoom";
 import { useSound } from "@/hooks/useSound";
 import type { Player } from "@/lib/tof";
 import { useLang } from "@/lib/i18n";
@@ -69,7 +69,8 @@ function ScreenPage() {
     () => players.find((p) => p.id === room?.current_player_id) ?? null,
     [players, room?.current_player_id],
   );
-  const left = useCountdown(room?.voting_ends_at);
+  const clockOffsetMs = useServerClockOffset();
+  const left = useCountdown(room?.voting_ends_at, clockOffsetMs);
   const phase = room?.phase ?? "lobby";
 
   const joinUrl = typeof window === "undefined" ? "" : `${window.location.origin}/play/${upper}`;
@@ -180,7 +181,9 @@ function ScreenPage() {
     } else if (phase === "stage") {
       await setPhase({
         phase: "voting",
-        voting_ends_at: new Date(Date.now() + VOTE_SECONDS * 1000).toISOString(),
+        // 用校正后的时间起算，不然大屏自己的系统时钟一旦跑偏，
+        // 所有玩家（包括时钟准的那些）算出的倒计时都会跟着一起偏
+        voting_ends_at: new Date(Date.now() + clockOffsetMs + VOTE_SECONDS * 1000).toISOString(),
       });
     } else if (phase === "voting") {
       if (room.current_player_id) {
@@ -194,7 +197,7 @@ function ScreenPage() {
         await setPhase({ phase: "lobby", current_player_id: null, voting_ends_at: null });
       else await setPhase({ phase: "board", current_player_id: null });
     }
-  }, [room, phase, remaining.length, spinning, spinPick, setPhase, submitted]);
+  }, [room, phase, remaining.length, spinning, spinPick, setPhase, submitted, clockOffsetMs]);
 
   const back = useCallback(async () => {
     if (!room) return;
@@ -204,10 +207,12 @@ function ScreenPage() {
     else if (phase === "reveal")
       await setPhase({
         phase: "voting",
-        voting_ends_at: new Date(Date.now() + VOTE_SECONDS * 1000).toISOString(),
+        // 用校正后的时间起算，不然大屏自己的系统时钟一旦跑偏，
+        // 所有玩家（包括时钟准的那些）算出的倒计时都会跟着一起偏
+        voting_ends_at: new Date(Date.now() + clockOffsetMs + VOTE_SECONDS * 1000).toISOString(),
       });
     else if (phase === "board") await setPhase({ phase: "lobby" });
-  }, [room, phase, setPhase]);
+  }, [room, phase, setPhase, clockOffsetMs]);
 
   const reset = useCallback(async () => {
     if (!room) return;

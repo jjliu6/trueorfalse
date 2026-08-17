@@ -248,6 +248,7 @@ export type Database = {
         }
       }
       reveal_truth: { Args: { p_player: string }; Returns: string }
+      server_now: { Args: Record<PropertyKey, never>; Returns: string }
       settle_round: { Args: { p_player: string }; Returns: undefined }
       submit_player: {
         Args: {
